@@ -1,6 +1,6 @@
 #pragma once 
 
-#include <filesystem/BuneNamespace.h>
+#include <filesystem/FilesystemNamespace.h>
 
 #include <filesystem/compatibility/ProcessorDetection.h>
 #include <filesystem/compatibility/SystemDetection.h>

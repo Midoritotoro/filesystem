@@ -1,9 +1,7 @@
 #pragma once 
 
 #include <filesystem/compatibility/CompilerDetection.h>
-#include <filesystem/arch/ProcessorDetection.h>
-
-#include <filesystem/compatibility/SimdCompatibility.h>
+#include <filesystem/compatibility/ProcessorDetection.h>
 
 #if !defined(filesystem_fastcall)
 #  if defined(filesystem_processor_x86_32)
@@ -40,12 +38,3 @@
 #    define filesystem_cdecl        
 #  endif // defined(filesystem_cpp_msvc) || defined(filesystem_cpp_clang) || defined(filesystem_cpp_gnu)
 #endif // !defined(filesystem_cdecl)
-
-
-#if !defined(filesystem_vectorcall)
-#  if defined(filesystem_cpp_msvc) && defined(filesystem_processor_x86) && defined(__SSE2__)
-#    define filesystem_vectorcall __vectorcall
-#  else
-#    define filesystem_vectorcall
-#  endif
-#endif // !defined(filesystem_vectorcall)

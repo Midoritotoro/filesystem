@@ -1,7 +1,7 @@
 #pragma once 
 
 #include <filesystem/compatibility/CompilerDetection.h>
-#include <filesystem/arch/ProcessorDetection.h>
+#include <filesystem/compatibility/ProcessorDetection.h>
 
 
 #if !defined(filesystem_unaligned)

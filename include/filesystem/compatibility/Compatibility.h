@@ -1,18 +1,6 @@
 #pragma once 
 
-// Clang attributes
-// https://clang.llvm.org/docs/AttributeReference.html#always-inline-force-inline
-// Clang builtins
-// https://clang.llvm.org/docs/LanguageExtensions.html
-
-// Msvc attributes
-// https://learn.microsoft.com/en-us/cpp/cpp/declspec?view=msvc-170
-// Msvc SAL
-// https://learn.microsoft.com/en-us/cpp/code-quality/using-sal-annotations-to-reduce-c-cpp-code-defects?view=msvc-170
-
-// Gcc attributes
-// https://ohse.de/uwe/articles/gcc-attributes.html and https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html
-
+#include <filesystem/Types.h>
 #include <filesystem/compatibility/CompilerDetection.h>
 #include <filesystem/compatibility/AlignmentMacros.h>
 #include <filesystem/compatibility/BranchPrediction.h>
@@ -23,7 +11,6 @@
 #include <filesystem/compatibility/LanguageFeatures.h>
 #include <filesystem/compatibility/MemoryMacros.h>
 #include <filesystem/compatibility/Nodiscard.h>
-#include <filesystem/compatibility/SimdCompatibility.h>
 #include <filesystem/compatibility/SystemDetection.h>
 #include <filesystem/compatibility/UnreachableCode.h>
 #include <filesystem/compatibility/Warnings.h>
@@ -33,3 +20,25 @@
 #include <cstddef>
 
 filesystem_disable_warning_msvc(4067)
+
+__FILESYSTEM_NAMESPACE_BEGIN
+
+#if defined(filesystem_os_windows)
+  constexpr inline auto windows = true;
+#else
+  constexpr inline auto windows = false;
+#endif
+
+#if defined(filesystem_os_win64)
+  constexpr inline auto windows_x86_64 = true;
+#else
+  constexpr inline auto windows_x86_64 = false;
+#endif
+
+#if defined(filesystem_os_linux)
+  constexpr inline auto linux = true;
+#else
+  constexpr inline auto linux = false;
+#endif
+
+__FILESYSTEM_NAMESPACE_END
