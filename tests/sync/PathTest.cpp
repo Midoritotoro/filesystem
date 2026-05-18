@@ -65,7 +65,7 @@ void test_modifiers() {
 
     fs::io::path p3(fs::io::path::string_type(STR("archive.tar.gz")));
     p3.replace_extension(fs::io::path(fs::io::path::string_type(STR("zip"))));
-    filesystem_assert(p3.native() == STR("archive.tar.zip"));
+    filesystem_assert(p3.native() == STR("archive.zip"));
 
     fs::io::path p4(fs::io::path::string_type(STR("noext")));
     p4.replace_extension(fs::io::path(fs::io::path::string_type(STR(".txt"))));
@@ -76,48 +76,48 @@ void test_modifiers() {
     filesystem_assert(p5.empty());
 }
 
-//void test_decomposition() {
-//#if defined(filesystem_os_windows)
-//    fs::io::path win_abs(fs::io::path::string_type(STR("C:\\Users\\Alice\\doc.txt")));
-//    filesystem_assert(win_abs.root_name().native() == STR("C:"));
-//    filesystem_assert(win_abs.root_directory().native() == STR("\\"));
-//    filesystem_assert(win_abs.root_path().native() == STR("C:\\"));
-//    filesystem_assert(win_abs.relative_path().native() == STR("Users\\Alice\\doc.txt"));
-//    filesystem_assert(win_abs.parent_path().native() == STR("C:\\Users\\Alice\\"));
-//    filesystem_assert(win_abs.filename().native() == STR("doc.txt"));
-//    filesystem_assert(win_abs.stem().native() == STR("doc"));
-//    filesystem_assert(win_abs.extension().native() == STR(".txt"));
-//
-//    fs::io::path win_rel(fs::io::path::string_type(STR("projects\\eve\\src\\main.cpp")));
-//    filesystem_assert(!win_rel.has_root_name());
-//    filesystem_assert(!win_rel.has_root_directory());
-//    filesystem_assert(win_rel.filename().native() == STR("main.cpp"));
-//    filesystem_assert(win_rel.stem().native() == STR("main"));
-//    filesystem_assert(win_rel.extension().native() == STR(".cpp"));
-//#else
-//    fs::io::path posix_abs(fs::io::path::string_type(STR("/home/alice/doc.txt")));
-//    filesystem_assert(!posix_abs.has_root_name());
-//    filesystem_assert(posix_abs.root_directory().native() == STR("/"));
-//    filesystem_assert(posix_abs.root_path().native() == STR("/"));
-//    filesystem_assert(posix_abs.relative_path().native() == STR("home/alice/doc.txt"));
-//    filesystem_assert(posix_abs.parent_path().native() == STR("/home/alice"));
-//    filesystem_assert(posix_abs.filename().native() == STR("doc.txt"));
-//    filesystem_assert(posix_abs.stem().native() == STR("doc"));
-//    filesystem_assert(posix_abs.extension().native() == STR(".txt"));
-//
-//    fs::io::path posix_rel(fs::io::path::string_type(STR("projects/eve/src/main.cpp")));
-//    filesystem_assert(!posix_rel.has_root_path());
-//    filesystem_assert(posix_rel.filename().native() == STR("main.cpp"));
-//#endif
-//
-//    fs::io::path only_ext(fs::io::path::string_type(STR(".gitignore")));
-//    filesystem_assert(only_ext.filename().native() == STR(".gitignore"));
-//    filesystem_assert(only_ext.has_stem());
-//    filesystem_assert(only_ext.has_extension());
-//
-//    fs::io::path dir_with_dot(fs::io::path::string_type(STR("foo/.")));
-//    filesystem_assert(dir_with_dot.filename().native() == STR("."));
-//}
+void test_decomposition() {
+#if defined(filesystem_os_windows)
+    fs::io::path win_abs(fs::io::path::string_type(STR("C:\\Users\\Alice\\doc.txt")));
+    filesystem_assert(win_abs.root_name().native() == STR("C:"));
+    filesystem_assert(win_abs.root_directory().native() == STR("\\"));
+    filesystem_assert(win_abs.root_path().native() == STR("C:\\"));
+    filesystem_assert(win_abs.relative_path().native() == STR("Users\\Alice\\doc.txt"));
+    filesystem_assert(win_abs.parent_path().native() == STR("C:\\Users\\Alice\\"));
+    filesystem_assert(win_abs.filename().native() == STR("doc.txt"));
+    filesystem_assert(win_abs.stem().native() == STR("doc"));
+    filesystem_assert(win_abs.extension().native() == STR(".txt"));
+
+    fs::io::path win_rel(fs::io::path::string_type(STR("projects\\eve\\src\\main.cpp")));
+    filesystem_assert(!win_rel.has_root_name());
+    filesystem_assert(!win_rel.has_root_directory());
+    filesystem_assert(win_rel.filename().native() == STR("main.cpp"));
+    filesystem_assert(win_rel.stem().native() == STR("main"));
+    filesystem_assert(win_rel.extension().native() == STR(".cpp"));
+#else
+    fs::io::path posix_abs(fs::io::path::string_type(STR("/home/alice/doc.txt")));
+    filesystem_assert(!posix_abs.has_root_name());
+    filesystem_assert(posix_abs.root_directory().native() == STR("/"));
+    filesystem_assert(posix_abs.root_path().native() == STR("/"));
+    filesystem_assert(posix_abs.relative_path().native() == STR("home/alice/doc.txt"));
+    filesystem_assert(posix_abs.parent_path().native() == STR("/home/alice"));
+    filesystem_assert(posix_abs.filename().native() == STR("doc.txt"));
+    filesystem_assert(posix_abs.stem().native() == STR("doc"));
+    filesystem_assert(posix_abs.extension().native() == STR(".txt"));
+
+    fs::io::path posix_rel(fs::io::path::string_type(STR("projects/eve/src/main.cpp")));
+    filesystem_assert(!posix_rel.has_root_path());
+    filesystem_assert(posix_rel.filename().native() == STR("main.cpp"));
+#endif
+
+    fs::io::path only_ext(fs::io::path::string_type(STR(".gitignore")));
+    filesystem_assert(only_ext.filename().native() == STR(".gitignore"));
+    filesystem_assert(only_ext.has_stem());
+    filesystem_assert(only_ext.has_extension());
+
+    fs::io::path dir_with_dot(fs::io::path::string_type(STR("foo/.")));
+    filesystem_assert(dir_with_dot.filename().native() == STR("."));
+}
 //
 //
 //void test_queries() {
@@ -183,7 +183,7 @@ int main() {
     test_constructors();
     test_native_access();
     test_modifiers();
-    //test_decomposition();
+    test_decomposition();
     //test_queries();
     //test_lexical_ops();
     //test_separator_handling();

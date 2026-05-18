@@ -22,20 +22,22 @@ class _Path_parser {
 public:
 	static void __remove_filename(__str_type& __path) {
 		const auto __filename = __find_filename(__path);
-		(__filename.begin() == __path.end()) ? __path.clear() : __path.resize((__filename.begin() + 1) - __path.begin());
+		(__filename == __path.end()) ? __path.clear() : __path.resize((__filename + 1) - __path.begin());
 	}
 	
 	static void __remove_extension(__str_type& __path) {
-		if (__path.empty()) return;
-		 
-		const auto __filename = __find_filename(__path);
-		const auto __extension = std::ranges::find(__filename.begin(), __filename.end(), _Traits::__dot);
-		\
-
+		filesystem_debug_assert(!__path.empty());
+		__path.erase(__find_extension(__path), __path.end());
 	}
 
-	static auto __find_filename(const __str_type& __path) {
-		return std::ranges::find_last_if(__path, __any_separator);
+	static __str_type::const_iterator __find_extension(const __str_type& __path) {
+		const auto __filename = __find_filename(__path);
+		return std::ranges::find(__filename, __path.end(), _Traits::__dot);
+	}
+
+	static __str_type::const_iterator __find_filename(const __str_type& __path) {
+		const auto __found = std::ranges::begin(std::ranges::find_last_if(__path, __any_separator));
+		return __found == __path.end() ? __path.begin() : __found;
 	}
 };
 

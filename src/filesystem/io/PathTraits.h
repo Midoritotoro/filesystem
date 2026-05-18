@@ -23,6 +23,7 @@ struct _Path_traits {
 	static constexpr __value_type __back_slash = __filesystem_native_text('\\');
 	static constexpr __value_type __slash = __filesystem_native_text('/');
 	static constexpr __value_type __dot = __filesystem_native_text('.');
+	static constexpr __value_type __colon = __filesystem_native_text(':');
 
 	using __string_type = std::basic_string<__value_type, std::char_traits<__value_type>, std::allocator<__value_type>>;
 };

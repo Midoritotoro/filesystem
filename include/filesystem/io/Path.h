@@ -5,6 +5,8 @@
 #include <ranges>
 #include <algorithm>
 #include <src/filesystem/io/PathParser.h>
+#include <src/filesystem/IsCharacter.h>
+#include <src/filesystem/string/StringConversions.h>
 #include <string>
 
 __FILESYSTEM_IO_NAMESPACE_BEGIN
@@ -16,6 +18,12 @@ public:
 	using value_type = _Traits::__value_type;
 	using string_type = _Traits::__string_type;
 
+	enum format {
+		native_format,
+		generic_format,
+		auto_format
+	};
+
 	path() noexcept {}
 	path(const string_type& __path) : _path(__path) {}
 
@@ -26,6 +34,15 @@ public:
 	path(path&& __path) noexcept {
 		_path = std::move(__path._path);
 		__path.clear();
+	}
+
+	template <class _Source_>
+	path(const _Source_& __source, format __fmt = auto_format) : _path(__str_cvt<string_type>(__source)) {
+	}
+
+	template <class _InputIterator_>
+	path(_InputIterator_ __first, _InputIterator_ __last) {
+		static_assert(is_character_v<std::iter_value_t<_InputIterator_>>, "invalid value_type");
 	}
 
 	path& operator=(string_type&& __path) {
@@ -55,7 +72,7 @@ public:
 	}
 
 	path& remove_filename() noexcept {
-		_Path_parser::__remove_filename(_path);
+		_Parser::__remove_filename(_path);
 		return *this;
 	}
 
@@ -65,8 +82,8 @@ public:
 	}
 
 	path& replace_extension(const path& __replacement = path()) noexcept {
-		_Path_parser::__remove_extension(_path);
-		return *this += (_Traits::__dot + __replacement._path);
+		_Parser::__remove_extension(_path);
+		return *this += (__replacement._path[0] == _Traits::__dot ? __replacement._path : _Traits::__dot + __replacement._path);
 	}
 
 	path& operator+=(const path& __path) {
@@ -139,52 +156,52 @@ public:
 	}
 
 	path extension() const noexcept {
-		return *this;
+		return path(_Parser::__find_extension(_path), _path.end());
 	}
 
 	bool empty() const noexcept {
 		return _path.empty();
 	}
 
-	//bool has_root_name() const noexcept {
+	bool has_root_name() const noexcept {
 
-	//}
+	}
 
-	//bool has_root_directory() const noexcept {
+	bool has_root_directory() const noexcept {
 
-	//}
+	}
 
-	//bool has_root_path() const noexcept {
+	bool has_root_path() const noexcept {
 
-	//}
+	}
 
-	//bool has_relative_path() const noexcept {
+	bool has_relative_path() const noexcept {
 
-	//}
+	}
 
-	//bool has_parent_path() const noexcept {
+	bool has_parent_path() const noexcept {
 
-	//}
+	}
 
-	//bool has_filename() const noexcept {
+	bool has_filename() const noexcept {
 
-	//}
+	}
 
-	//bool has_stem() const noexcept {
-	//
-	//}
+	bool has_stem() const noexcept {
+	
+	}
 
-	//bool has_extension() const noexcept {
+	bool has_extension() const noexcept {
 
-	//}
+	}
 
-	//bool is_absolute() const noexcept {
+	bool is_absolute() const noexcept {
+		return !is_relative();
+	}
 
-	//}
-
-	//bool is_relative() const noexcept {
-	//	
-	//}
+	bool is_relative() const noexcept {
+		return !__any_separator(_path[0]) && !(_path[1] == _Traits::__colon);
+	}
 
 	path lexically_normal() const noexcept {
 		return *this;

@@ -1,0 +1,24 @@
+#pragma once 
+
+#include <src/filesystem/options/Aggregator.h>
+#include <src/filesystem/options/As.h>
+#include <src/filesystem/options/Call.h>
+#include <src/filesystem/options/Callable.h>
+#include <src/filesystem/options/Concepts.h>
+#include <src/filesystem/options/ConditionalCallable.h>
+#include <src/filesystem/options/DecoratedWith.h>
+#include <src/filesystem/options/Drop.h>
+#include <src/filesystem/options/Fetch.h>
+#include <src/filesystem/options/Foldable.h>
+#include <src/filesystem/options/Functor.h>
+#include <src/filesystem/options/IgnoreNone.h>
+#include <src/filesystem/options/Keys.h>
+#include <src/filesystem/options/Keywords.h>
+#include <src/filesystem/options/Merge.h>
+#include <src/filesystem/options/Option.h>
+#include <src/filesystem/options/Options.h>
+#include <src/filesystem/options/SameAs.h>
+#include <src/filesystem/options/SelectKeys.h>
+#include <src/filesystem/options/Settings.h>
+#include <src/filesystem/options/StrictElementwiseCallable.h>
+#include <src/filesystem/options/TypeOr.h>
