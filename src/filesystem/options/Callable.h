@@ -3,7 +3,6 @@
 #include <src/filesystem/options/Merge.h>
 #include <src/filesystem/options/Options.h>
 #include <src/filesystem/options/DecoratedWith.h>
-#include <src/filesystem/options/If.h>
 
 __FILESYSTEM_OPTIONS_NAMESPACE_BEGIN
 
@@ -24,8 +23,8 @@ struct callable:
 
     template <callable_options __Options_> 
     filesystem_always_inline constexpr auto operator[](const __Options_& __options) const noexcept {
-        auto __merged = filesystem::options::merge(__options, this->options());
-        filesystem::options::options<decltype(__merged)> __new_options{__merged};
+        auto __merged = fs::options::merge(__options, this->options());
+        fs::options::options<decltype(__merged)> __new_options{__merged};
         return _Functor_<decltype(__new_options)>{__new_options};
     }
 
@@ -39,7 +38,7 @@ struct callable:
 
     template <class _Type_>
     filesystem_always_inline void operator[](const _Type_& __t) const noexcept
-        requires(!callable_options<_Type_> && !decorator<_Type_>
+        requires(!callable_options<_Type_> && !decorator<_Type_> &&
             !requires(const base& __base) { __base[__t]; }) = delete;
 
     template <class ... Args>

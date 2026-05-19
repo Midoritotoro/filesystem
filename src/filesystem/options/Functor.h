@@ -7,6 +7,6 @@
 __FILESYSTEM_OPTIONS_NAMESPACE_BEGIN
 
 template <template <class> class _Function_>
-constexpr inline auto functor = _Function_<filesystem::options::options<>>{};
+constexpr inline auto functor = _Function_<fs::options::options<>>{};
 
 __FILESYSTEM_OPTIONS_NAMESPACE_END

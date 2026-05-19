@@ -15,4 +15,4 @@ __code_page __current_thread_code_page() noexcept {
 	return __code_page(___lc_codepage_func());
 }
 
-__FILESYSTEM_SYSTEM_NAMESPACE_BEGIN
+__FILESYSTEM_SYSTEM_NAMESPACE_END

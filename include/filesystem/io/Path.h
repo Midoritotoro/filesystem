@@ -164,35 +164,35 @@ public:
 	}
 
 	bool has_root_name() const noexcept {
-
+		return false;
 	}
 
 	bool has_root_directory() const noexcept {
-
+		return false;
 	}
 
 	bool has_root_path() const noexcept {
-
+		return false;
 	}
 
 	bool has_relative_path() const noexcept {
-
+		return false;
 	}
 
 	bool has_parent_path() const noexcept {
-
+		return false;
 	}
 
 	bool has_filename() const noexcept {
-
+		return false;
 	}
 
 	bool has_stem() const noexcept {
-	
+		return false;
 	}
 
 	bool has_extension() const noexcept {
-
+		return false;
 	}
 
 	bool is_absolute() const noexcept {
