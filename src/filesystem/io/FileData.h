@@ -2,11 +2,12 @@
 
 #include <filesystem/compatibility/Compatibility.h>
 
-
 __FILESYSTEM_IO_NAMESPACE_BEGIN
 
+constexpr inline auto __fs_max_path = 260;
+
 enum class __win_file_attributes: u32 {
-    __readonly = FILE_ATTRIBUTE_READONLY,
+    __read_only = FILE_ATTRIBUTE_READONLY,
     __hidden = FILE_ATTRIBUTE_HIDDEN,
     __system = FILE_ATTRIBUTE_SYSTEM,
     __directory = FILE_ATTRIBUTE_DIRECTORY,
@@ -31,7 +32,7 @@ struct __win_fs_filetime {
 };
 
 struct __win_fs_find_data {
-    __win_file_attributes __attributes = __invalid;
+    __win_file_attributes __attributes = __win_file_attributes::__invalid;
 
     __win_fs_filetime __creation_time;
     __win_fs_filetime __last_access_time;
@@ -43,7 +44,7 @@ struct __win_fs_find_data {
     __win_fs_reparse_tag __reparse_point_tag;
     u32 __reserved1;
 
-    wchar_t __file_name[__std_fs_max_path];
+    wchar_t __file_name[__fs_max_path];
     wchar_t __short_file_name[14];
 };
 

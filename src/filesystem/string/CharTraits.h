@@ -71,7 +71,7 @@ struct _Char_traits<wchar_t> {
 
 	template <character_type _ToChar_>
 	filesystem_nodiscard static filesystem_always_inline void __cvt(
-		system::__code_page __page, _ToChar_* __out_ch, value_type* __in_ch, u64 __len) noexcept
+		system::__code_page __page, _ToChar_* __out_ch, const value_type* __in_ch, u64 __len) noexcept
 	{
 		using _RawToType = std::remove_cvref_t<_ToChar_>;
 		
@@ -114,7 +114,7 @@ struct _Char_traits<char8_t> {
 
 	template <character_type _ToChar_>
 	filesystem_nodiscard static filesystem_always_inline void __cvt(
-		system::__code_page __page, _ToChar_* __out_ch, value_type* __in_ch, u64 __len) noexcept
+		system::__code_page __page, _ToChar_* __out_ch, const value_type* __in_ch, u64 __len) noexcept
 	{
 		using _RawToType = std::remove_cvref_t<_ToChar_>;
 
@@ -146,7 +146,7 @@ struct _Char_traits<char16_t> {
 
 	template <character_type _ToChar_>
 	filesystem_nodiscard static filesystem_always_inline void __cvt(
-		system::__code_page __page, _ToChar_* __out_ch, char16_t* __in_ch, u64 __len) noexcept 
+		system::__code_page __page, _ToChar_* __out_ch, const char16_t* __in_ch, u64 __len) noexcept
 	{
 
 	}
@@ -170,7 +170,7 @@ struct _Char_traits<char32_t> {
 
 	template <character_type _ToChar_>
 	filesystem_nodiscard static filesystem_always_inline void __cvt(
-		system::__code_page __page, _ToChar_* __out_ch, char32_t* __in_ch, u64 __len) noexcept
+		system::__code_page __page, _ToChar_* __out_ch, const char32_t* __in_ch, u64 __len) noexcept
 	{
 
 	}

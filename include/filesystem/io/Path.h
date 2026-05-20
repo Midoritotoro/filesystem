@@ -36,13 +36,15 @@ public:
 		__path.clear();
 	}
 
-	template <class _Source_>
-	path(const _Source_& __source, format __fmt = auto_format) : _path(__str_cvt<string_type>(__source)) {
+	template <str_type _Source_>
+	path(const _Source_& __source, format __fmt = auto_format) {
+		__str_cvt(_path, __source);
 	}
 
 	template <class _InputIterator_>
 	path(_InputIterator_ __first, _InputIterator_ __last) {
 		static_assert(is_character_v<std::iter_value_t<_InputIterator_>>, "invalid value_type");
+		__str_cvt(_path, __first, __last);
 	}
 
 	path& operator=(string_type&& __path) {
@@ -128,11 +130,14 @@ public:
 	}
 	
 	path root_name() const noexcept {
-		return *this;
+		return path(_path.data(), _Parser::__find_root_name_end(_path.data(), _path.data() + _path.size()));
 	}
 
 	path root_directory() const noexcept {
-		return *this;
+		if (has_root_directory())
+			return path(_Parser::__find_root_name_end(_path.data(), _path.data() + _path.size()), _path.data() + _path.size());
+
+		return path();
 	}
 
 	path root_path() const noexcept {
@@ -168,7 +173,7 @@ public:
 	}
 
 	bool has_root_directory() const noexcept {
-		return false;
+		return _Parser::__has_root_directory(__path);
 	}
 
 	bool has_root_path() const noexcept {

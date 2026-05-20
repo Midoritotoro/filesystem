@@ -5,8 +5,6 @@
 
 __FILESYSTEM_SYSTEM_NAMESPACE_BEGIN
 
-constexpr inline auto __fs_max_path = 260;
-
 enum class __win_error : u32 {
     __success = ERROR_SUCCESS,
     __invalid_function = ERROR_INVALID_FUNCTION,
