@@ -1,12 +1,13 @@
 #pragma once 
 
 #include <filesystem/compatibility/Compatibility.h>
+#include <src/filesystem/Flags.h>
 
 __FILESYSTEM_IO_NAMESPACE_BEGIN
 
 constexpr inline auto __fs_max_path = 260;
 
-enum class __win_file_attributes: u32 {
+enum class __fs_win_file_attributes_data : u32 {
     __read_only = FILE_ATTRIBUTE_READONLY,
     __hidden = FILE_ATTRIBUTE_HIDDEN,
     __system = FILE_ATTRIBUTE_SYSTEM,
@@ -17,8 +18,11 @@ enum class __win_file_attributes: u32 {
     __temporary = FILE_ATTRIBUTE_TEMPORARY,
     __sparse_file = FILE_ATTRIBUTE_SPARSE_FILE,
     __reparse_point = FILE_ATTRIBUTE_REPARSE_POINT,
-    __invalid = INVALID_FILE_ATTRIBUTES
+    __invalid = INVALID_FILE_ATTRIBUTES,
+    __overlapped = FILE_FLAG_OVERLAPPED
 };
+
+FS_DECLARE_FLAGS(__fs_win_file_attributes, __fs_win_file_attributes_data);
 
 enum class __win_fs_reparse_tag : u32 {
     __none = 0,
@@ -32,7 +36,7 @@ struct __win_fs_filetime {
 };
 
 struct __win_fs_find_data {
-    __win_file_attributes __attributes = __win_file_attributes::__invalid;
+    __fs_win_file_attributes __attributes = __fs_win_file_attributes_data::__invalid;
 
     __win_fs_filetime __creation_time;
     __win_fs_filetime __last_access_time;
@@ -57,5 +61,28 @@ enum class __win_fs_stats_flags : u32 {
     __link_count = 0x10,
     __last_write_time = 0x20
 };
+
+enum class __fs_win_share_mode : u32 {
+	__none = 0,
+	__delete = FILE_SHARE_DELETE,
+	__read = FILE_SHARE_READ, 
+	__write = FILE_SHARE_WRITE
+};
+
+enum class __fs_win_file_access_mode : u32 {
+	__read = GENERIC_READ,
+	__write = GENERIC_WRITE,
+};
+
+enum class __fs_win_file_creation_disposition : u32 {
+	__create_always = CREATE_ALWAYS,
+	__create_new = CREATE_NEW,
+	__open_always = OPEN_ALWAYS,
+	__open_existing = OPEN_EXISTING,
+	__truncate_existing = TRUNCATE_EXISTING
+};
+
+FS_DECLARE_FLAGS(__fs_share_mode_flags, __fs_win_share_mode);
+FS_DECLARE_FLAGS(__fs_win_file_access_flags, __fs_win_file_access_mode);
 
 __FILESYSTEM_IO_NAMESPACE_END

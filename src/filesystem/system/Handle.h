@@ -11,7 +11,7 @@ public:
 
 	handle() noexcept {}
 	~handle() noexcept {
-		if (_auto_delete) destroy();
+		destroy();
 	}
 
 	handle(native_handle_type __handle) noexcept : _native_handle(__handle) {}
@@ -26,8 +26,8 @@ public:
 		return *this;
 	}
 
-	handle(native_handle_type __handle, bool __auto_delete, deleter_type __deleter) noexcept :
-		_native_handle(__handle), _auto_delete(__auto_delete), _deleter(std::move(__deleter))
+	handle(native_handle_type __handle, deleter_type __deleter) noexcept :
+		_native_handle(__handle), _deleter(std::move(__deleter))
 	{}
 
 	void set_deleter(deleter_type __deleter) noexcept {
@@ -38,18 +38,8 @@ public:
 		return _deleter;
 	}
 
-	void set_auto_delete(bool __auto_delete) noexcept {
-		_auto_delete = __auto_delete;
-	}
-
-	filesystem_nodiscard bool auto_delete() const noexcept {
-		return _auto_delete;
-	}
-
 	void set_native_handle(native_handle_type __handle, bool __delete_previous = true) noexcept {
-		if (__handle == _native_handle) return;
 		if (__delete_previous) destroy();
-
 		_native_handle = __handle;
 	}
 
@@ -57,17 +47,15 @@ public:
 		return _native_handle;
 	}
 
-	bool destroy() noexcept {
-		if (_native_handle == nullptr) return false;
+	void destroy() noexcept {
+		if (_native_handle == INVALID_HANDLE_VALUE) return;
 		
 		_deleter(_native_handle);
-		_native_handle = nullptr;
-
-		return true;
+		_native_handle = INVALID_HANDLE_VALUE;
 	}
 
 	filesystem_nodiscard bool available() const noexcept {
-		return (_native_handle != nullptr);
+		return (_native_handle != INVALID_HANDLE_VALUE);
 	}
 	
 	friend bool operator==(const handle& __x, const handle& __y) noexcept { 
@@ -78,9 +66,8 @@ public:
 		return __x._native_handle != __y._native_handle;
 	}
 protected:
-	native_handle_type _native_handle = nullptr;
+	native_handle_type _native_handle = INVALID_HANDLE_VALUE;
 	deleter_type _deleter = nullptr;
-	bool _auto_delete = true;
 };
 
 __FILESYSTEM_SYSTEM_NAMESPACE_END

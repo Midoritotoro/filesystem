@@ -47,6 +47,17 @@ public:
 		__str_cvt(_path, __first, __last);
 	}
 
+	path& operator=(const path& __path) {
+		_path = __path._path;
+		return *this;
+	}
+
+	path& operator=(path&& __path) {
+		_path = std::move(__path._path);
+		__path.clear();
+		return *this;
+	}
+
 	path& operator=(string_type&& __path) {
 		_path = std::move(__path);
 		return *this;

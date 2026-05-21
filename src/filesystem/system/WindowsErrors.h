@@ -5,7 +5,7 @@
 
 __FILESYSTEM_SYSTEM_NAMESPACE_BEGIN
 
-enum class __win_error : u32 {
+enum class __fs_win_error : u32 {
     __success = ERROR_SUCCESS,
     __invalid_function = ERROR_INVALID_FUNCTION,
     __file_not_found = ERROR_FILE_NOT_FOUND,
