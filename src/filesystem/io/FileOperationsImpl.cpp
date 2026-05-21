@@ -1,5 +1,5 @@
 #include <src/filesystem/io/FileOperationsImpl.h>
-
+#include <src/filesystem/io/Overlapped.h>
 
 __FILESYSTEM_IO_NAMESPACE_BEGIN
 
@@ -20,11 +20,24 @@ file __fs_open_file(const path& __path, __fs_win_file_access_flags __access_flag
 		__fs_win_file_creation_disposition::__open_existing, __attributes);
 }
 
-filesystem_nodiscard sizetype __fs_read_file(file& __file, void* __buffer, dword_t __bytes_count,
-	dword_t __byte_offset) throw()
-{
+sizetype __fs_read_file(file& __file, mutable_buffer __buffer, sizetype __byte_offset) throw() {
 	dword_t __readed_bytes = 0;
-	ReadFile(__file.native_handle().native_handle(), __buffer, __bytes_count, &__readed_bytes, NULL);
+
+	_Overlapped __overlapped;
+
+	__overlapped.Offset = __byte_offset & 0xFFFFFFFFu;
+	__overlapped.OffsetHigh = (__byte_offset >> 32u) & 0xFFFFFFFFu;
+
+	const auto __ok = ReadFile(__file.native_handle().native_handle(), __buffer.data(), __buffer.size(), &__readed_bytes, &__overlapped);
+
+	if (!__ok) throw filesystem_error("Failed to read file", __get_last_error_code());
+	
+	return __readed_bytes;
 }
+
+sizetype __fs_read_file_async(file& __file, mutable_buffer __buffer, sizetype __byte_offset) throw() {
+
+}
+
 
 __FILESYSTEM_IO_NAMESPACE_END

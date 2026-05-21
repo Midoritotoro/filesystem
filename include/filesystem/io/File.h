@@ -11,7 +11,7 @@ class file {
 public:
     file() noexcept = default;
     explicit file(const path& __path, system::handle __h) throw() {
-        if (!__h.available()) throw filesystem_error("Invalid handle", _path, __make_std_error_code(__get_last_error_code()));
+        if (!__h.available()) throw filesystem_error("Invalid handle", _path, __get_last_error_code());
         else {
             _handle = __h;
             _path = __path;
