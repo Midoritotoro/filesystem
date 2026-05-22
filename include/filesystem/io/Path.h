@@ -184,7 +184,7 @@ public:
 	}
 
 	bool has_root_directory() const noexcept {
-		return _Parser::__has_root_directory(__path);
+		return false;// return _Parser::__has_root_directory(__path);
 	}
 
 	bool has_root_path() const noexcept {

@@ -26,7 +26,10 @@ enum class __fs_win_error : u32 {
     __already_exists = ERROR_ALREADY_EXISTS,
     __filename_exceeds_range = ERROR_FILENAME_EXCED_RANGE,
     __directory_name_is_invalid = ERROR_DIRECTORY,
-    __reparse_tag_invalid = ERROR_REPARSE_TAG_INVALID
+    __reparse_tag_invalid = ERROR_REPARSE_TAG_INVALID,
+    __error_io_pending = ERROR_IO_PENDING,
+    __error_more_data = ERROR_MORE_DATA,
+    __error_handle_eof = ERROR_HANDLE_EOF
 };
 
 __FILESYSTEM_SYSTEM_NAMESPACE_END

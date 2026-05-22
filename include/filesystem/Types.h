@@ -70,13 +70,13 @@ using sdword_t      = i32;
 using qword_t       = u64;
 using sqword_t      = i64;
 
-#if defined(raze_os_windows) 
+#if defined(filesystem_os_windows) 
   using system_bool_t = BOOL;
 #else 
   using system_bool_t = bool;
 #endif
   
-#if defined(raze_os_windows)
+#if defined(filesystem_os_windows)
   using system_handle_t = void*;
 #else
   using system_handle_t = void*;

@@ -134,7 +134,7 @@ inline constexpr auto extended_flag_convert(_ExtendedEnum_ __v) noexcept {
 	return static_cast<_Enum_>(__v);
 }
 
-template <class _ExtendedEnum_ class _Enum_ = typename extended_flags<_ExtendedEnum_>::type>
+template <class _ExtendedEnum_, class _Enum_ = extended_flags_t<_ExtendedEnum_>>
 inline constexpr auto extended_flags_convert(_ExtendedEnum_ __v) noexcept {
 	return flags<_Enum_>(extended_flag_convert(__v));
 }
@@ -332,7 +332,7 @@ inline constexpr auto operator|(_ExtendedEnum_ __x, __flags_zero_helper) noexcep
 
 template <class _ExtendedEnum_>
 inline constexpr auto operator~(_ExtendedEnum_ __x) noexcept {
-	return ~extended_flags_convert(__y);
+	return ~extended_flags_convert(__x);
 }
 
 __FILESYSTEM_NAMESPACE_END
@@ -369,7 +369,7 @@ template <class _Enum_>
 inline constexpr auto operator|(fs::__flags_zero_helper, _Enum_ __x) noexcept
 	requires(std::is_enum<_Enum_>::value&& is_flag_type(_Enum_{})) 
 {
-	return base::make_flags(__x);
+	return fs::make_flags(__x);
 }
 
 template <class _ExtendedEnum_>

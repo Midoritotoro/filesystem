@@ -10,10 +10,10 @@ __FILESYSTEM_IO_NAMESPACE_BEGIN
 class file {
 public:
     file() noexcept = default;
-    explicit file(const path& __path, system::handle __h) throw() {
+    explicit file(const path& __path, system::handle&& __h) {
         if (!__h.available()) throw filesystem_error("Invalid handle", _path, __get_last_error_code());
         else {
-            _handle = __h;
+            _handle = std::move(__h);
             _path = __path;
         }
     }
@@ -29,7 +29,7 @@ public:
         return _handle.available(); 
     }
 
-    system::handle native_handle() noexcept { 
+    system::handle& handle() noexcept { 
         return _handle; 
     }
 

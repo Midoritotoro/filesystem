@@ -13,7 +13,7 @@ __FILESYSTEM_NAMESPACE_BEGIN
 template <character_type _Type_>
 struct _Char_traits {};
 
-i32 __cvt_wide_to_multi_byte(system::__code_page __page, dword_t __dw_flags, 
+inline i32 __cvt_wide_to_multi_byte(system::__code_page __page, dword_t __dw_flags,
 	LPCWCH __wide_char_str, i32 __count_wide_chars, LPSTR __multi_byte_str,
 	i32 __byte_size, LPCCH __default_char, LPBOOL __default_char_usage) noexcept
 {
@@ -21,18 +21,18 @@ i32 __cvt_wide_to_multi_byte(system::__code_page __page, dword_t __dw_flags,
 		__count_wide_chars, __multi_byte_str, __byte_size, __default_char, __default_char_usage);
 }
 
-i32 __cvt_multi_byte_to_wide(system::__code_page __page, dword_t __dw_flags, LPCCH __multi_byte_str,
+inline i32 __cvt_multi_byte_to_wide(system::__code_page __page, dword_t __dw_flags, LPCCH __multi_byte_str,
 	i32 __byte_size, LPWSTR __wide_char_str, i32 __count_wide_chars) noexcept
 {
 	return MultiByteToWideChar(static_cast<u32>(__page), __dw_flags, __multi_byte_str,
 		__byte_size, __wide_char_str, __count_wide_chars);
 }
 
-i32 __cvt_utf32_to_utf16(std::u16string_view __out_str, std::u32string_view __in_str) noexcept {
+inline i32 __cvt_utf32_to_utf16(std::u16string_view __out_str, std::u32string_view __in_str) noexcept {
 	return 0;
 }
 
-i32 __cvt_utf16_to_utf32(std::u16string_view __out_str, std::u32string_view __in_str) noexcept {
+inline i32 __cvt_utf16_to_utf32(std::u16string_view __out_str, std::u32string_view __in_str) noexcept {
 	return 0;
 }
 

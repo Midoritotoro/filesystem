@@ -6,15 +6,6 @@
 
 __FILESYSTEM_OPTIONS_NAMESPACE_BEGIN
 
-struct __decorator 
-{};
-
-template <class _ConditionType_>
-concept condition_type = std::is_same_v<_ConditionType_, bool>;
-
-template <class _ID_>
-concept decorator = std::derived_from<_ID_, __decorator>;
-
 template <template<class> class _Functor_, class _OptionsValues_, class ... _Options_>
 struct callable:
     decorated_with<_OptionsValues_, _Options_...>
@@ -38,8 +29,7 @@ struct callable:
 
     template <class _Type_>
     filesystem_always_inline void operator[](const _Type_& __t) const noexcept
-        requires(!callable_options<_Type_> && !decorator<_Type_> &&
-            !requires(const base& __base) { __base[__t]; }) = delete;
+        requires(!callable_options<_Type_> && !requires(const base& __base) { __base[__t]; }) = delete;
 
     template <class ... Args>
     filesystem_always_inline constexpr auto behavior(Args&& ... __args) const noexcept {

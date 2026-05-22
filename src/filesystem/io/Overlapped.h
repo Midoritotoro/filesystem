@@ -6,7 +6,7 @@
 __FILESYSTEM_IO_NAMESPACE_BEGIN
 
 struct _Overlapped : OVERLAPPED {
-	_Overlapped() noexcept {
+	_Overlapped() {
 		Internal = 0;
 		InternalHigh = 0;
 		Offset = 0;
@@ -20,6 +20,11 @@ struct _Overlapped : OVERLAPPED {
 
 	~_Overlapped() {
 		if (hEvent) CloseHandle(hEvent);
+	}
+
+	void set_offset(sizetype __offset) noexcept {
+		Offset = static_cast<dword_t>(__offset & 0xFFFFFFFFu);
+		if constexpr (sizeof(sizetype) > sizeof(dword_t)) OffsetHigh = static_cast<dword_t>((__offset >> 32u) & 0xFFFFFFFFu);
 	}
 };
 

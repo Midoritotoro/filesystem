@@ -11,7 +11,7 @@ enum class __code_page : u32 {
 	__utf7 = 65000
 };
 
-__code_page __current_thread_code_page() noexcept {
+inline __code_page __current_thread_code_page() noexcept {
 	return __code_page(___lc_codepage_func());
 }
 

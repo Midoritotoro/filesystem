@@ -12,7 +12,7 @@ struct share_read_mode {};
 struct share_write_mode {};
 struct open_always_mode {};
 struct binary_open_mode {};
-struct async_open_mode {};
+struct async_mode {};
 struct hidden_open_mode {};
 struct directory_open_mode {};
 struct symlink_open_mode {};
@@ -25,13 +25,13 @@ constexpr inline auto share_read = fs::options::flag(share_read_mode{});
 constexpr inline auto share_write = fs::options::flag(share_write_mode{});
 constexpr inline auto open_always = fs::options::flag(open_always_mode{});
 constexpr inline auto as_binary = fs::options::flag(binary_open_mode{});
-constexpr inline auto async = fs::options::flag(async_open_mode{});
+constexpr inline auto async = fs::options::flag(async_mode{});
 constexpr inline auto hidden = fs::options::flag(hidden_open_mode{});
 constexpr inline auto directory = fs::options::flag(directory_open_mode{});
 constexpr inline auto symlink = fs::options::flag(symlink_open_mode{});
 constexpr inline auto junction = fs::options::flag(junction_open_mode{});
 
-struct async_open_option : fs::options::exact_option<async> {};
+struct async_option : fs::options::exact_option<async> {};
 struct binary_open_option : fs::options::exact_option<as_binary> {};
 struct for_read_option : fs::options::exact_option<for_read> {};
 struct for_write_option : fs::options::exact_option<for_write> {};
@@ -79,32 +79,32 @@ filesystem_nodiscard constexpr filesystem_always_inline auto __fs_file_attribute
 template <class _Options_>
 struct _Configurable_open : fs::options::strict_elementwise_callable<_Configurable_open, 
 	_Options_, for_read_option, for_write_option, binary_open_option, share_delete_option, 
-	share_read_option, share_write_option, open_always_option, async_open_option>
+	share_read_option, share_write_option, open_always_option>
 {
-	filesystem_nodiscard filesystem_always_inline file operator()(const path& __path) {
+	filesystem_nodiscard filesystem_always_inline file operator()(const path& __path) const {
 		return fs::options::__dispatch_call(*this, __path);
 	}
 
-	static filesystem_always_inline auto deferred_call(const path& __path) {
-		return __fs_open_file(__path, __fs_access_flags_from_options<_Options_>(), __fs_share_flags_from_options<_Options_>(), 
-			__fs_creation_disposition_from_options<_Options_>(), __fs_file_attributes_from_options<_Options_>());
+	static filesystem_always_inline auto deferred_call(auto __options, const path& __path) {
+		return __fs_open_file(__path, __fs_access_flags_from_options<_Options_>(),
+			__fs_share_flags_from_options<_Options_>(), __fs_file_attributes_from_options<_Options_>());
 	}
 
 	using callable_tag_type = _Configurable_open;
 };
 
 template <class _Options_>
-struct _Configurable_read : fs::options::strict_elementwise_callable<_Configurable_read, _Options_> {
+struct _Configurable_read : fs::options::strict_elementwise_callable<_Configurable_read, _Options_, async_option> {
 	filesystem_nodiscard filesystem_always_inline sizetype operator()(
-		file& __file, mutable_buffer __buffer, dword_t __bytes_count, dword_t __offset) const noexcept
+		file& __file, mutable_buffer __buffer, sizetype __offset) const
 	{
-		return fs::options::__dispatch_call(*this, __file, __buffer, __bytes_count, __offset);
+		return fs::options::__dispatch_call(*this, __file, __buffer, __offset);
 	}
 
 	static filesystem_always_inline auto deferred_call(
-		file& __file, mutable_buffer __buffer, dword_t __bytes_count, dword_t __offset) noexcept
+		auto __options, file& __file, mutable_buffer __buffer, sizetype __offset)
 	{
-		return __fs_read_file(__file, __buffer, __bytes_count, __offset);
+		return __fs_read_file(__file, __buffer, __offset);
 	}
 
 	using callable_tag_type = _Configurable_read;
@@ -140,5 +140,14 @@ template <class _Options_>
 struct _Configurable_delete : fs::options::strict_elementwise_callable<_Configurable_delete, _Options_> {
 	using callable_tag_type = _Configurable_delete;
 };
+
+constexpr inline auto open = fs::options::functor<_Configurable_open>;
+constexpr inline auto read = fs::options::functor<_Configurable_read>;
+constexpr inline auto write = fs::options::functor<_Configurable_write>;
+constexpr inline auto create = fs::options::functor<_Configurable_create>;
+constexpr inline auto copy = fs::options::functor<_Configurable_copy>;
+constexpr inline auto move = fs::options::functor<_Configurable_move>;
+constexpr inline auto _delete = fs::options::functor<_Configurable_delete>;
+constexpr inline auto rename = fs::options::functor<_Configurable_rename>;
 
 __FILESYSTEM_IO_NAMESPACE_END

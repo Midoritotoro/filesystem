@@ -18,8 +18,8 @@ enum class __fs_win_file_attributes_data : u32 {
     __temporary = FILE_ATTRIBUTE_TEMPORARY,
     __sparse_file = FILE_ATTRIBUTE_SPARSE_FILE,
     __reparse_point = FILE_ATTRIBUTE_REPARSE_POINT,
-    __invalid = INVALID_FILE_ATTRIBUTES,
-    __overlapped = FILE_FLAG_OVERLAPPED
+    __overlapped = FILE_FLAG_OVERLAPPED,
+    __invalid = INVALID_FILE_ATTRIBUTES
 };
 
 FS_DECLARE_FLAGS(__fs_win_file_attributes, __fs_win_file_attributes_data);

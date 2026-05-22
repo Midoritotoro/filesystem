@@ -67,7 +67,7 @@ concept callable_option = concepts::option<_Type_>;
 
 template <auto _Option_> 
 struct exact_option {
-    constexpr filesystem_always_inline auto process(const auto& __base, /*concepts::exactly<_Option_>*/ const auto& __options) const noexcept {
+    constexpr filesystem_always_inline auto process(const auto& __base, concepts::exactly<_Option_> auto const& __options) const noexcept {
         return fs::options::merge_prefer_first(__base, options{ __options });
     }
 
