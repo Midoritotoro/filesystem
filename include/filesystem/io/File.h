@@ -10,18 +10,30 @@ __FILESYSTEM_IO_NAMESPACE_BEGIN
 class file {
 public:
     file() noexcept = default;
-    explicit file(const path& __path, system::handle&& __h) {
-        if (!__h.available()) throw filesystem_error("Invalid handle", _path, __get_last_error_code());
-        else {
-            _handle = std::move(__h);
-            _path = __path;
-        }
+    explicit file(const path& __path, system::handle __h) {
+        _handle = __h;
+        _path = __path;
+
+        if (!_handle.available()) throw filesystem_error("Invalid handle", _path, __get_last_error_code());
     }
 
-    ~file() {}
+    ~file() {
+        _handle.destroy();
+    }
 
-    file(file&&) noexcept = default;
-    file& operator=(file&&) noexcept = default;
+    file(file&& __other) noexcept {
+		_handle = std::move(__other._handle);
+		_path = std::move(__other._path);
+    }
+
+    file& operator=(file&& __other) noexcept {
+        if (this != &__other) {
+            _handle = std::move(__other._handle);
+            _path = std::move(__other._path);
+        }
+        return *this;
+    }
+
     file(const file&) = delete;
     file& operator=(const file&) = delete;
 
@@ -29,12 +41,12 @@ public:
         return _handle.available(); 
     }
 
-    system::handle& handle() noexcept { 
+    system::handle handle() noexcept { 
         return _handle; 
     }
 
     void reset() noexcept { 
-        if (_handle.available()) _handle.destroy(); 
+        _handle.destroy(); 
     }
 private:
     path _path;

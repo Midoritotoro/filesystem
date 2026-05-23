@@ -55,3 +55,8 @@
 #    define filesystem_declare_cold_function
 #  endif // defined(filesystem_cpp_gnu) || defined(filesystem_cpp_clang)
 #endif // !defined(filesystem_declare_cold_function)
+
+
+#if !defined(fs_noexcept_if)
+#  define fs_noexcept_if(...) noexcept(noexcept(__VA_ARGS__))
+#endif // !defined(fs_noexcept_if)

@@ -10,17 +10,19 @@ public:
 	using deleter_type = system_bool_t(*)(native_handle_type);
 
 	handle() noexcept {}
+	~handle() noexcept {}
 
-	~handle() noexcept {
-		destroy();
-	}
-
-	handle(const handle& __other) noexcept = delete;
-	handle& operator=(const handle& __other) noexcept = delete;
+	handle(const handle& __other) noexcept : _native_handle(__other._native_handle), _deleter(__other._deleter) {}
 
 	handle(native_handle_type __handle) noexcept : _native_handle(__handle) {}
 	handle(handle&& __other) noexcept : _native_handle(__other._native_handle), _deleter(std::move(__other._deleter)) {
 		__other._native_handle = INVALID_HANDLE_VALUE;
+	}
+
+	handle& operator=(const handle& __other) noexcept {
+		_native_handle = __other._native_handle;
+		_deleter = __other._deleter;
+		return *this;
 	}
 
 	handle& operator=(handle&& __other) noexcept {

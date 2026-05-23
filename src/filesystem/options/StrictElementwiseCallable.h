@@ -29,7 +29,7 @@ struct strict_elementwise_callable: callable<_Function_, _OptionsValues_, _Optio
 
     template <callable_options __Options_, class _Type_, class ... _Types_>
     constexpr filesystem_always_inline auto behaviour(const __Options_& __options, 
-        _Type_ __first, _Types_ ... __args) const noexcept
+        _Type_ __first, _Types_ ... __args) const
     {
         if constexpr (requires{ func_t::deferred_call(__options, __first, __args...); }) return func_t::deferred_call(__options, __first, __args...);
         else return ignore{};
@@ -37,7 +37,7 @@ struct strict_elementwise_callable: callable<_Function_, _OptionsValues_, _Optio
 };
 
 template <class _Callable_, class ... _Args_>
-constexpr filesystem_always_inline auto __dispatch_call(const _Callable_& __callable, _Args_&& ... __args) noexcept {
+constexpr filesystem_always_inline auto __dispatch_call(const _Callable_& __callable, _Args_&& ... __args) {
     using _ReturnType = decltype(__callable(std::forward<_Args_>(__args)...));
     if constexpr (std::is_void_v<_ReturnType>) __callable.behavior(__callable.options(), std::forward<_Args_>(__args)...);
     else return __callable.behavior(__callable.options(), std::forward<_Args_>(__args)...);

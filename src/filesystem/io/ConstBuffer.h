@@ -5,9 +5,9 @@
 
 __FILESYSTEM_IO_NAMESPACE_BEGIN
 
-class buffer {
+class const_buffer {
 public:
-	buffer(const void* __mem, sizetype __size) noexcept :
+	const_buffer(const void* __mem, sizetype __size) noexcept :
 		_mem(__mem), _size(__size)
 	{}
 
@@ -17,6 +17,14 @@ public:
 	
 	const void* data() noexcept {
 		return _mem;
+	}
+
+	operator const void* () noexcept {
+		return _mem;
+	}
+
+	const_buffer operator+(sizetype __offset) const noexcept {
+		return const_buffer(static_cast<const char*>(_mem) + __offset, _size - __offset);
 	}
 private:
 	const void* _mem = nullptr;

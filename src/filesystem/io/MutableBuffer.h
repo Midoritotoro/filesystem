@@ -22,6 +22,14 @@ public:
 	void* data() noexcept {
 		return _mem;
 	}
+
+	operator void* () noexcept {
+		return _mem;
+	}
+
+	mutable_buffer operator+(sizetype __offset) const noexcept {
+		return mutable_buffer(static_cast<char*>(_mem) + __offset, _size - __offset);
+	}
 private:
 	void* _mem = nullptr;
 	sizetype _size = 0;

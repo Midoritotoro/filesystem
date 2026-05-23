@@ -22,12 +22,12 @@ inline std::error_code __get_last_error_code() noexcept {
 class filesystem_error : public std::system_error {
 public:
     filesystem_error(const std::string& __message, const std::error_code __error_code):
-        system_error(__error_code, __message), __what(std::runtime_error::what()) 
+        system_error(__error_code, __message), __what(std::system_error::what())
     {}
 
     filesystem_error(const std::string& __message, const io::path& __path, const std::error_code __error_code):
         system_error(__error_code, __message), _path(__path),
-        __what(std::runtime_error::what()) 
+        __what(std::system_error::what())
     {}
 
     const io::path& path() const noexcept {

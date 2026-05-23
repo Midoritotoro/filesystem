@@ -40,7 +40,7 @@ template <class _Function_, class _Type_>
 foldable(const _Function_&, _Type_&&) -> foldable<_Function_, _Type_>;
 
 template <class _Function_, class _Type_, class _Value_>
-constexpr filesystem_always_inline auto fold_left(_Function_&& __f, _Type_&& __t, _Value_ __init) noexcept {
+constexpr filesystem_always_inline auto fold_left(_Function_&& __f, _Type_&& __t, _Value_ __init) {
     return [&]<std::size_t... I>(std::index_sequence<I...>) {
         return (foldable{ __f, __init } >> ... >> foldable{
             __f, std::get<I>(std::forward<_Type_>(__t))})._value;

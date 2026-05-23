@@ -17,7 +17,6 @@
 #  endif // defined(filesystem_processor_x86_32)
 #endif // !defined(filesystem_fastcall)
 
-
 #if !defined(filesystem_stdcall)
 #  if defined(filesystem_cpp_msvc) || defined(filesystem_cpp_clang)
 #    define filesystem_stdcall            __stdcall
