@@ -9,12 +9,12 @@ __FILESYSTEM_IO_NAMESPACE_BEGIN
 
 class file {
 public:
-    file() noexcept = default;
+    file() noexcept {};
     explicit file(const path& __path, system::handle __h) {
         _handle = __h;
         _path = __path;
 
-        if (!_handle.available()) throw filesystem_error("Invalid handle", _path, __get_last_error_code());
+        filesystem_assert(_handle.available());
     }
 
     ~file() {

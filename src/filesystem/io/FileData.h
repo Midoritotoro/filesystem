@@ -18,13 +18,18 @@ enum class __fs_win_file_attributes_data : u32 {
     __temporary             = FILE_ATTRIBUTE_TEMPORARY,
     __sparse_file           = FILE_ATTRIBUTE_SPARSE_FILE,
     __reparse_point         = FILE_ATTRIBUTE_REPARSE_POINT,
-    __overlapped            = FILE_FLAG_OVERLAPPED,
     __invalid               = INVALID_FILE_ATTRIBUTES,
-    __backup_semantics      = FILE_FLAG_BACKUP_SEMANTICS,
-    __open_reparse_point    = FILE_FLAG_OPEN_REPARSE_POINT
+};
+
+enum class __fs_win_file_flags_data : u32 {
+    __none = 0,
+    __overlapped = FILE_FLAG_OVERLAPPED,
+    __backup_semantics = FILE_FLAG_BACKUP_SEMANTICS,
+    __open_reparse_point = FILE_FLAG_OPEN_REPARSE_POINT
 };
 
 FS_DECLARE_FLAGS(__fs_win_file_attributes, __fs_win_file_attributes_data);
+FS_DECLARE_FLAGS(__fs_win_file_flags, __fs_win_file_flags_data);
 
 enum class __win_fs_reparse_tag : u32 {
     __none          = 0,
@@ -32,24 +37,27 @@ enum class __win_fs_reparse_tag : u32 {
     __symlink       = 0xA000000CL
 };
 
-struct __win_fs_filetime {
-    dword_t __low = 0;
-    dword_t __high = 0;
-};
+using __win_fs_filetime = FILETIME;
 
 struct __win_file_info {
+    __win_file_info() noexcept {}
+    __win_file_info(const BY_HANDLE_FILE_INFORMATION& __info) noexcept {
+        __attrs = __info.dwFileAttributes;
+        __creation_time = __info.ftCreationTime;
+        __last_access_time = __info.ftLastAccessTime;
+        __last_write_time = __info.ftLastWriteTime;
+        __file_size_high = __info.nFileSizeHigh;
+        __file_size_low = __info.nFileSizeLow;
+    }
+
     dword_t __attrs;
 
     __win_fs_filetime __creation_time;
     __win_fs_filetime __last_access_time;
     __win_fs_filetime __last_write_time;
 
-    dword_t __volume_serial_number;
     dword_t __file_size_high;
     dword_t __file_size_low;
-    dword_t __number_of_links;
-    dword_t __file_index_high;
-    dword_t __file_index_low;
 };
 
 enum class __fs_win_share_mode : u32 {
@@ -62,7 +70,13 @@ enum class __fs_win_share_mode : u32 {
 enum class __fs_win_file_access_mode : u32 {
 	__read  = GENERIC_READ,
 	__write = GENERIC_WRITE,
+
+    __delete = DELETE,
+    __file_read_attributes = FILE_READ_ATTRIBUTES,
+    __file_write_attributes = FILE_WRITE_ATTRIBUTES,
+    __file_generic_write = FILE_GENERIC_WRITE
 };
+
 
 enum class __fs_win_file_creation_disposition : u32 {
 	__create_always     = CREATE_ALWAYS,

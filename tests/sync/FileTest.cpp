@@ -169,7 +169,7 @@ void test_read_eof() {
 void test_open_always() {
     remove_if_exists(test_always_file_name);
 
-    auto file = fs::io::open[fs::io::open_always](fs::io::path(STR("fs_open_always_test.txt")));
+    auto file = fs::io::open[fs::io::always](fs::io::path(STR("fs_open_always_test.txt")));
 
     filesystem_assert(file.is_open());
     remove_if_exists(test_always_file_name);
@@ -205,7 +205,7 @@ void test_create_existing_file() {
 void test_write_whole_buffer() {
     remove_if_exists(test_write_file_name);
 
-    auto file = fs::io::open[fs::io::open_always][fs::io::for_write](fs::io::path(STR("fs_write_test.txt")));
+    auto file = fs::io::open[fs::io::always][fs::io::for_write](fs::io::path(STR("fs_write_test.txt")));
 
     const char data[] = "abcdef";
 
@@ -253,7 +253,7 @@ void test_write_with_offset() {
 void test_write_empty_buffer() {
     remove_if_exists(test_write_file_name);
 
-    auto file = fs::io::open[fs::io::open_always][fs::io::for_write](fs::io::path(STR("fs_write_test.txt")));
+    auto file = fs::io::open[fs::io::always][fs::io::for_write](fs::io::path(STR("fs_write_test.txt")));
     const char dummy = 0;
     auto written = fs::io::write(file, fs::io::buffer(&dummy, &dummy), 0);
 

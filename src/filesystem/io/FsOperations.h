@@ -81,15 +81,21 @@ filesystem_nodiscard constexpr filesystem_always_inline auto __fs_share_flags_fr
 
 template <class _Options_>
 filesystem_nodiscard constexpr filesystem_always_inline auto __fs_file_attributes_from_options() noexcept {
-	auto __attrs = __fs_win_file_attributes(__fs_win_file_attributes_data::__normal) | __fs_win_file_attributes_data::__overlapped;
+	auto __attrs = __fs_win_file_attributes(__fs_win_file_attributes_data::__normal);
 	if constexpr (_Options_::contains(hidden)) __attrs |= __fs_win_file_attributes_data::__hidden;
+	return __attrs;
+}
+
+template <class _Options_>
+filesystem_nodiscard constexpr filesystem_always_inline auto __fs_file_flags_from_options() noexcept {
+	auto __attrs = __fs_win_file_flags(__fs_win_file_flags_data::__overlapped);
 	return __attrs;
 }
 
 template <class _Options_>
 struct _Configurable_open : fs::options::strict_elementwise_callable<_Configurable_open, 
 	_Options_, for_read_option, for_write_option, share_delete_option, 
-	share_read_option, share_write_option, open_always_option, as_directory_option>
+	share_read_option, share_write_option, always_option, as_directory_option>
 {
 private:
 	static filesystem_nodiscard constexpr filesystem_always_inline auto __open_disposition() noexcept {
@@ -106,7 +112,7 @@ public:
 	static filesystem_always_inline auto deferred_call(auto __options, const path& __path) {
 		return __fs_create_file(__path, __fs_access_flags_from_options<_Options_>(),
 			__fs_share_flags_from_options<_Options_>(), __open_disposition(),
-			__fs_file_attributes_from_options<_Options_>());
+			__fs_file_attributes_from_options<_Options_>(), __fs_file_flags_from_options<_Options_>());
 	}
 };
 
@@ -181,7 +187,7 @@ public:
 	static filesystem_always_inline auto deferred_call(auto __options, const path& __path) {
 		return __fs_create_file(__path, __fs_access_flags_from_options<_Options_>(),
 			__fs_share_flags_from_options<_Options_>(), __disposition(),
-			__fs_file_attributes_from_options<_Options_>());
+			__fs_file_attributes_from_options<_Options_>(), __fs_file_flags_from_options<_Options_>());
 	}
 };
 
@@ -213,11 +219,25 @@ struct _Configurable_remove : fs::options::strict_elementwise_callable<_Configur
 	}
 };
 
+template <class _Options_>
+struct _Configurable_exists : fs::options::strict_elementwise_callable<_Configurable_exists, _Options_> {
+	using callable_tag_type = _Configurable_exists;
+
+	filesystem_nodiscard filesystem_always_inline bool operator()(const path& __path) const {
+		return fs::options::__dispatch_call(*this, __path);
+	}
+
+	static filesystem_always_inline auto deferred_call(auto __options, const path& __path) {
+		return __fs_file_exists(__path);
+	}
+};
+
 constexpr inline auto open = fs::options::functor<_Configurable_open>;
 constexpr inline auto read = fs::options::functor<_Configurable_read>;
 constexpr inline auto write = fs::options::functor<_Configurable_write>;
 constexpr inline auto append = fs::options::functor<_Configurable_append>;
 constexpr inline auto create = fs::options::functor<_Configurable_create>;
+constexpr inline auto exists = fs::options::functor<_Configurable_exists>;
 constexpr inline auto copy = fs::options::functor<_Configurable_copy>;
 constexpr inline auto move = fs::options::functor<_Configurable_move>;
 constexpr inline auto remove = fs::options::functor<_Configurable_remove>;
