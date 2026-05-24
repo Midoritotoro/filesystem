@@ -37,7 +37,9 @@ struct strict_elementwise_callable: callable<_Function_, _OptionsValues_, _Optio
 };
 
 template <class _Callable_, class ... _Args_>
-constexpr filesystem_always_inline auto __dispatch_call(const _Callable_& __callable, _Args_&& ... __args) {
+constexpr filesystem_always_inline auto __dispatch_call(const _Callable_& __callable, _Args_&& ... __args)
+    fs_noexcept_if(__callable.behavior(__callable.options(), std::forward<_Args_>(__args)...))
+{
     using _ReturnType = decltype(__callable(std::forward<_Args_>(__args)...));
     if constexpr (std::is_void_v<_ReturnType>) __callable.behavior(__callable.options(), std::forward<_Args_>(__args)...);
     else return __callable.behavior(__callable.options(), std::forward<_Args_>(__args)...);

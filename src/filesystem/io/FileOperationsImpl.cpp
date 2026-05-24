@@ -87,7 +87,7 @@ system::__fs_win_error __fs_try_clear_readonly_for_delete(system::handle __handl
 	return system::__fs_win_error::__success;
 }
 
-std::pair<file, system::__fs_win_error> __fs_create_file(const path& __path, __fs_win_file_access_flags __access_flags,
+std::pair<file, system::io_error> __fs_create_file(const path& __path, __fs_win_file_access_flags __access_flags,
 	__fs_share_mode_flags __share_mode_flags, __fs_win_file_creation_disposition __creation_disposition,
 	__fs_win_file_attributes __attributes, __fs_win_file_flags __flags)
 {
@@ -167,7 +167,7 @@ sizetype __fs_append_file(file& __file, const_buffer __buffer) {
 	return __fs_write_file(__file, __buffer, static_cast<sizetype>(-1));
 }
 
-std::pair<bool, system::__fs_win_error> __fs_remove_file(const path& __path) {
+std::pair<bool, system::io_error> __fs_remove_file(const path& __path) {
 	constexpr auto __flags = __fs_win_file_flags_data::__backup_semantics | __fs_win_file_flags_data::__open_reparse_point;
 
 	auto [__file, __err] = __fs_create_file(__path, __fs_win_file_access_mode::__file_read_attributes |
@@ -176,34 +176,31 @@ std::pair<bool, system::__fs_win_error> __fs_remove_file(const path& __path) {
 
 	auto __has_permissions_to_change_file_attrs = false;
 
-	if (__err == system::__fs_win_error::__success) {
+	if (__err)
 		__has_permissions_to_change_file_attrs = true;
-	}
-	else if (__err == system::__fs_win_error::__access_denied) {
+	else if (__err == system::io_error::access_denied) {
 		auto [__for_delete, __err2] = __fs_create_file(__path, __fs_win_file_access_mode::__delete,
 			__fs_win_share_mode::__none, __fs_win_file_creation_disposition::__open_existing,
 			__fs_win_file_attributes_data::__normal, __flags);
 		
-		if (__err2 != system::__fs_win_error::__access_denied) return { false, __err2 };
+		if (__err2 != system::io_error::access_denied) return { false, __err2 };
 		__file = std::move(__for_delete);
 	}
-	else {
-		return { false, __err == system::__fs_win_error::__file_not_found ? system::__fs_win_error::__success : __err };
-	}
+	else return { false, __err.value() == system::io_error::file_not_found ? system::io_error::success : __err };
 
 	const auto [__ok, __err3] = __fs_try_delete_via_disposition_ex(__file.handle());
 
-	if (!__ok && __err3 != system::__fs_win_error::__not_supported)
+	if (!__ok && __err3 != system::io_error::not_supported)
 		return { false, __err3 };
 
 	const auto __err4 = __set_delete_flag(__file.handle());
 
-	if (__err4 == system::__fs_win_error::__success) {
-		return { true, system::__fs_win_error::__success };
+	if (__err4 == system::io_error::success) {
+		return { true, system::io_error::success };
 	}
-	else if (__err4 == system::__fs_win_error::__access_denied && __has_permissions_to_change_file_attrs) {
+	else if (__err4 == system::io_error::access_denied && __has_permissions_to_change_file_attrs) {
 		const auto __err5 = __fs_try_clear_readonly_for_delete(__file.handle());
-		return { __err5 == system::__fs_win_error::__success, __err5 };
+		return { __err5 == system::io_error::success, __err5 };
 	}
 
 	return { false, __err4 };

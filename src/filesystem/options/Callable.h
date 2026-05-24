@@ -33,14 +33,14 @@ struct callable:
 
     template <class ... Args>
     filesystem_always_inline constexpr auto behavior(Args&& ... __args) const 
-        noexcept(noexcept(_Functor_<_OptionsValues_>::deferred_call(std::forward<Args>(__args)...)))
+        fs_noexcept_if(_Functor_<_OptionsValues_>::deferred_call(std::forward<Args>(__args)...))
     {
         return _Functor_<_OptionsValues_>::deferred_call(std::forward<Args>(__args)...);
     }
 
     template <class ... Args>
     filesystem_always_inline constexpr auto retarget(Args&& ... __args) const 
-        noexcept(noexcept(_Functor_<_OptionsValues_>::deferred_call(this->options(), std::forward<Args>(__args)...))) 
+        fs_noexcept_if(_Functor_<_OptionsValues_>::deferred_call(this->options(), std::forward<Args>(__args)...))
     {
         return _Functor_<_OptionsValues_>::deferred_call(this->options(), std::forward<Args>(__args)...);
     }

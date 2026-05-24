@@ -20,3 +20,4 @@
 #include <src/filesystem/options/Settings.h>
 #include <src/filesystem/options/StrictElementwiseCallable.h>
 #include <src/filesystem/options/TypeOr.h>
+#include <src/filesystem/options/Notifiable.h>
