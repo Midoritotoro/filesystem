@@ -34,7 +34,6 @@ struct hidden_mode {};
 struct directory_mode {};
 struct symlink_mode {};
 struct junction_mode {};
-struct if_not_exists_mode {};
 
 constexpr inline auto for_read = fs::options::flag(for_read_mode{});
 constexpr inline auto for_write = fs::options::flag(for_write_mode{});
@@ -47,7 +46,6 @@ constexpr inline auto hidden = fs::options::flag(hidden_mode{});
 constexpr inline auto dir = fs::options::flag(directory_mode{});
 constexpr inline auto link = fs::options::flag(symlink_mode{});
 constexpr inline auto junct = fs::options::flag(junction_mode{});
-constexpr inline auto if_not_exists = fs::options::flag(if_not_exists_mode{});
 
 struct async_option : fs::options::exact_option<async> {};
 struct for_read_option : fs::options::exact_option<for_read> {};
@@ -60,7 +58,6 @@ struct hidden_option : fs::options::exact_option<hidden> {};
 struct directory_option : fs::options::exact_option<dir> {};
 struct symlink_option : fs::options::exact_option<link> {};
 struct junction_option : fs::options::exact_option<junct> {};
-struct if_not_exists_option : fs::options::exact_option<if_not_exists> {};
 
 template <class _Options_>
 filesystem_nodiscard constexpr filesystem_always_inline auto __fs_access_flags_from_options() noexcept {
@@ -186,7 +183,7 @@ struct _Configurable_append : fs::options::notifiable<_Configurable_append, _Opt
 template <class _Options_>
 struct _Configurable_create : fs::options::notifiable<_Configurable_create, _Options_,
 	for_read_option, for_write_option, share_delete_option, share_read_option, share_write_option,
-	always_option, if_not_exists_option, directory_option>
+	always_option, directory_option>
 {
 private:
 	static filesystem_nodiscard constexpr filesystem_always_inline auto __disposition() noexcept {
