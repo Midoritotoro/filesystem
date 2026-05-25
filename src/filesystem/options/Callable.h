@@ -13,36 +13,36 @@ struct callable:
     using base = decorated_with<_OptionsValues_, _Options_...>;
 
     template <callable_options __Options_> 
-    filesystem_always_inline constexpr auto operator[](const __Options_& __options) const noexcept {
-        auto __merged = fs::options::merge(__options, this->options());
-        fs::options::options<decltype(__merged)> __new_options{__merged};
-        return _Functor_<decltype(__new_options)>{__new_options};
+    filesystem_always_inline constexpr auto operator[](const __Options_& opts) const noexcept {
+        auto merged = fs::options::merge(opts, this->options());
+        fs::options::options<decltype(merged)> new_options {merged};
+        return _Functor_<decltype(new_options)>{new_options};
     }
 
     template <class _Type_>
-    filesystem_always_inline constexpr auto operator[](_Type_ __t) const noexcept
-        requires(requires(const base& __base) { __base[__t];}) 
+    filesystem_always_inline constexpr auto operator[](_Type_ t) const noexcept
+        requires(requires(const base& b) { b[t];}) 
     {
-        auto __new_traits = base::operator[](__t);
-        return _Functor_<decltype(__new_traits)>{__new_traits};
+        auto new_traits = base::operator[](t);
+        return _Functor_<decltype(new_traits)>{new_traits};
     }
 
     template <class _Type_>
-    filesystem_always_inline void operator[](const _Type_& __t) const noexcept
-        requires(!callable_options<_Type_> && !requires(const base& __base) { __base[__t]; }) = delete;
+    filesystem_always_inline void operator[](const _Type_& t) const noexcept
+        requires(!callable_options<_Type_> && !requires(const base& b) { b[t]; }) = delete;
 
     template <class ... Args>
-    filesystem_always_inline constexpr auto behavior(Args&& ... __args) const 
-        fs_noexcept_if(_Functor_<_OptionsValues_>::deferred_call(std::forward<Args>(__args)...))
+    filesystem_always_inline constexpr auto behavior(Args&& ... args) const 
+        fs_noexcept_if(_Functor_<_OptionsValues_>::deferred_call(std::forward<Args>(args)...))
     {
-        return _Functor_<_OptionsValues_>::deferred_call(std::forward<Args>(__args)...);
+        return _Functor_<_OptionsValues_>::deferred_call(std::forward<Args>(args)...);
     }
 
     template <class ... Args>
-    filesystem_always_inline constexpr auto retarget(Args&& ... __args) const 
-        fs_noexcept_if(_Functor_<_OptionsValues_>::deferred_call(this->options(), std::forward<Args>(__args)...))
+    filesystem_always_inline constexpr auto retarget(Args&& ... args) const 
+        fs_noexcept_if(_Functor_<_OptionsValues_>::deferred_call(this->options(), std::forward<Args>(args)...))
     {
-        return _Functor_<_OptionsValues_>::deferred_call(this->options(), std::forward<Args>(__args)...);
+        return _Functor_<_OptionsValues_>::deferred_call(this->options(), std::forward<Args>(args)...);
     }
 
 protected:

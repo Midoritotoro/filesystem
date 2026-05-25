@@ -4,28 +4,28 @@
 #include <string>
 
 #if defined(filesystem_os_windows)
-#  define __filesystem_native_text(__str) L##__str
+#  define filesystem_native_text(str) L##str
 #else
-#  define __filesystem_native_text(__str) __str
+#  define filesystem_native_text(str) str
 #endif // defined(filesystem_os_windows)
 
 __FILESYSTEM_IO_NAMESPACE_BEGIN
 
-struct _Path_traits {
+struct Path_traits {
 #if defined(filesystem_os_windows)
-	using __value_type = wchar_t;
-	static constexpr __value_type __preferred_separator = L'\\';
+	using value_type = wchar_t;
+	static constexpr value_type preferred_separator = L'\\';
 #else
-	using __value_type = char;
-	static constexpr __value_type __preferred_separator = '/'
+	using value_type = char;
+	static constexpr value_type preferred_separator = '/'
 #endif
 
-	static constexpr __value_type __back_slash = __filesystem_native_text('\\');
-	static constexpr __value_type __slash = __filesystem_native_text('/');
-	static constexpr __value_type __dot = __filesystem_native_text('.');
-	static constexpr __value_type __colon = __filesystem_native_text(':');
+	static constexpr value_type back_slash = filesystem_native_text('\\');
+	static constexpr value_type slash = filesystem_native_text('/');
+	static constexpr value_type dot = filesystem_native_text('.');
+	static constexpr value_type colon = filesystem_native_text(':');
 
-	using __string_type = std::basic_string<__value_type, std::char_traits<__value_type>, std::allocator<__value_type>>;
+	using string_type = std::basic_string<value_type, std::char_traits<value_type>, std::allocator<value_type>>;
 };
 
 __FILESYSTEM_IO_NAMESPACE_END

@@ -10,21 +10,21 @@ struct settings;
 
 template <concepts::option ... _Keys1_, concepts::option ... _Keys2_>
 constexpr filesystem_always_inline auto merge(
-    const settings<_Keys1_...>& __options, 
-    const settings<_Keys2_...>& __definition) noexcept
+    const settings<_Keys1_...>& opts1, 
+    const settings<_Keys2_...>& definition) noexcept
 {
-    auto __selector = [] <class _Key_, class _Options_> (const _Key_&, const _Options_& __opts, const auto& __d) {
-        constexpr _Key_ __key;
-        if constexpr(_Options_::contains(__key)) return (__key = __opts[__key]);
-        else return (__key = __d[__key]);
+    auto selector = [] <class _Key_, class _Options_> (const _Key_&, const _Options_& opts, const auto& d) {
+        constexpr _Key_ key;
+        if constexpr(_Options_::contains(key)) return (key = opts[key]);
+        else return (key = d[key]);
     };
 
-    auto __select = [&] <class ... _Keys_> (const keys<_Keys_...>&, const auto& __os, const auto& __ds) {
-        return settings(__selector(_Keys_{}, __os, __ds)...);
+    auto select = [&] <class ... _Keys_> (const keys<_Keys_...>&, const auto& os, const auto& ds) {
+        return settings(selector(_Keys_{}, os, ds)...);
     };
 
-    return __select(typename uniques<keys<typename _Keys1_::keyword_type...>,
-        keys<typename _Keys2_::keyword_type...>>::type{}, __options, __definition);
+    return select(typename uniques_<keys<typename _Keys1_::keyword_type...>,
+        keys<typename _Keys2_::keyword_type...>>::type{}, opts1, definition);
 }
 
 __FILESYSTEM_OPTIONS_NAMESPACE_END

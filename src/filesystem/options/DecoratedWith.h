@@ -13,15 +13,15 @@ struct decorated_with:
     using _Options_::process...;
 
     constexpr decorated_with() noexcept {}
-    constexpr decorated_with(_OptionsValues_ __values):
-        _OptionsValues_(std::move(__values)) 
+    constexpr decorated_with(_OptionsValues_ values):
+        _OptionsValues_(std::move(values)) 
     {}
 
-    template <class __Options_>
-    filesystem_nodiscard constexpr filesystem_always_inline auto operator[](__Options_ __options) const
-        requires(requires(const _OptionsValues_& __values) { this->process(__values, __options); })
+    template <class Options_>
+    filesystem_nodiscard constexpr filesystem_always_inline auto operator[](Options_ options) const
+        requires(requires(const _OptionsValues_& values) { this->process(values, options); })
     {
-        return process(static_cast<const _OptionsValues_&>(*this), __options);
+        return process(static_cast<const _OptionsValues_&>(*this), options);
     }
 
     filesystem_nodiscard constexpr filesystem_always_inline auto options() const {

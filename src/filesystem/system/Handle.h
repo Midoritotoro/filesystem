@@ -12,50 +12,50 @@ public:
 	handle() noexcept {}
 	~handle() noexcept {}
 
-	handle(const handle& __other) noexcept : _native_handle(__other._native_handle), _deleter(__other._deleter) {}
+	handle(const handle& other) noexcept : _native_handle(other._native_handle), _deleter(other._deleter) {}
 
-	handle(native_handle_type __handle) noexcept : _native_handle(__handle) {}
-	handle(handle&& __other) noexcept : _native_handle(__other._native_handle), _deleter(std::move(__other._deleter)) {
-		__other._native_handle = INVALID_HANDLE_VALUE;
+	handle(native_handle_type handle) noexcept : _native_handle(handle) {}
+	handle(handle&& other) noexcept : _native_handle(other._native_handle), _deleter(std::move(other._deleter)) {
+		other._native_handle = INVALID_HANDLE_VALUE;
 	}
 
-	handle& operator=(const handle& __other) noexcept {
-		_native_handle = __other._native_handle;
-		_deleter = __other._deleter;
+	handle& operator=(const handle& other) noexcept {
+		_native_handle = other._native_handle;
+		_deleter = other._deleter;
 		return *this;
 	}
 
-	handle& operator=(handle&& __other) noexcept {
-		if (this != &__other) {
+	handle& operator=(handle&& other) noexcept {
+		if (this != &other) {
 			destroy();
-			_native_handle = __other._native_handle;
-			_deleter = std::move(__other._deleter);
-			__other._native_handle = INVALID_HANDLE_VALUE;
+			_native_handle = other._native_handle;
+			_deleter = std::move(other._deleter);
+			other._native_handle = INVALID_HANDLE_VALUE;
 		}
 
 		return *this;
 	}
 
-	handle& operator=(native_handle_type __other) noexcept {
-		_native_handle = __other;
+	handle& operator=(native_handle_type other) noexcept {
+		_native_handle = other;
 		return *this;
 	}
 
-	handle(native_handle_type __handle, deleter_type __deleter) noexcept :
-		_native_handle(__handle), _deleter(std::move(__deleter))
+	handle(native_handle_type handle, deleter_type deleter) noexcept :
+		_native_handle(handle), _deleter(std::move(deleter))
 	{}
 
-	void set_deleter(deleter_type __deleter) noexcept {
-		_deleter = std::move(__deleter);
+	void set_deleter(deleter_type deleter) noexcept {
+		_deleter = std::move(deleter);
 	}
 
 	filesystem_nodiscard deleter_type deleter() const noexcept {
 		return _deleter;
 	}
 
-	void set_native(native_handle_type __handle, bool __delete_previous = true) noexcept {
-		if (__delete_previous) destroy();
-		_native_handle = __handle;
+	void set_native(native_handle_type handle, bool delete_previous = true) noexcept {
+		if (delete_previous) destroy();
+		_native_handle = handle;
 	}
 
 	filesystem_nodiscard native_handle_type native() noexcept {
@@ -73,12 +73,12 @@ public:
 		return (_native_handle != INVALID_HANDLE_VALUE && _native_handle != NULL);
 	}
 	
-	friend bool operator==(const handle& __x, const handle& __y) noexcept { 
-		return __x._native_handle == __y._native_handle;
+	friend bool operator==(const handle& x, const handle& y) noexcept { 
+		return x._native_handle == y._native_handle;
 	}
 	
-	friend bool operator!=(const handle& __x, const handle& __y) noexcept {
-		return __x._native_handle != __y._native_handle;
+	friend bool operator!=(const handle& x, const handle& y) noexcept {
+		return x._native_handle != y._native_handle;
 	}
 protected:
 	native_handle_type _native_handle = INVALID_HANDLE_VALUE;

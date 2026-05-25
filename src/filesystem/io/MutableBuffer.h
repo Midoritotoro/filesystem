@@ -7,32 +7,35 @@ __FILESYSTEM_IO_NAMESPACE_BEGIN
 
 class mutable_buffer {
 public:
-	mutable_buffer(void* __mem, sizetype __size) noexcept :
-		_mem(__mem), _size(__size)
+	using buffer_type = void*;
+	using size_type = sizetype;
+
+	mutable_buffer(buffer_type mem, size_type size) noexcept :
+		_mem(mem), _size(size)
 	{}
 	
-	mutable_buffer(sizetype __size) noexcept :
-		_mem(::operator new(__size)), _size(__size)
+	mutable_buffer(size_type size) noexcept :
+		_mem(::operator new(size)), _size(size)
 	{}
 
-	sizetype size() const noexcept {
+	size_type size() const noexcept {
 		return _size;
 	}
 	
-	void* data() noexcept {
+	buffer_type data() const noexcept {
 		return _mem;
 	}
 
-	operator void* () noexcept {
+	operator buffer_type() const noexcept {
 		return _mem;
 	}
 
-	mutable_buffer operator+(sizetype __offset) const noexcept {
-		return mutable_buffer(static_cast<char*>(_mem) + __offset, _size - __offset);
+	mutable_buffer operator+(size_type offset) const noexcept {
+		return mutable_buffer(static_cast<char*>(_mem) + offset, _size - offset);
 	}
 private:
-	void* _mem = nullptr;
-	sizetype _size = 0;
+	buffer_type _mem = nullptr;
+	size_type _size = 0;
 };
 
 __FILESYSTEM_IO_NAMESPACE_END

@@ -15,15 +15,15 @@ struct completion_callback_key_t : as_keyword<completion_callback_key_t> {
 
 constexpr inline completion_callback_key_t completion_callback_key = {};
 
-struct __ignore_none {};
-constexpr inline __ignore_none ignore_none = {};
+struct ignore_none_t {};
+constexpr inline ignore_none_t ignore_none = {};
 
 template <class _OnComplete_>
 struct on_completion {
     using callback_type = _OnComplete_;
 
-    on_completion(_OnComplete_ __on_complete):
-        _on_complete(__on_complete)
+    on_completion(_OnComplete_ on_complete):
+        _on_complete(on_complete)
     {}
 
 	_OnComplete_ callback() const {
@@ -37,20 +37,20 @@ template <class _Type_>
 concept on_completion_expression = requires { typename _Type_::callback_type; };
 
 struct completion_callback_option {
-    filesystem_always_inline constexpr auto process(const auto& __base,
-        concepts::exactly<completion_callback_key> auto __options) const
+    filesystem_always_inline constexpr auto process(const auto& base,
+        concepts::exactly<completion_callback_key> auto opts) const
     {
-        return fs::options::merge_prefer_first(__base, options{ __options });
+        return fs::options::merge_prefer_first(base, options{ opts });
     }
 
-    filesystem_always_inline constexpr auto process(const auto& __base,
-        on_completion_expression auto __option) const noexcept
+    filesystem_always_inline constexpr auto process(const auto& base,
+        on_completion_expression auto option) const noexcept
     {
-        return process(__base, completion_callback_key = __option);
+        return process(base, completion_callback_key = option);
     }
 
-    filesystem_always_inline constexpr auto default_to(const auto& __base) const {
-        return fs::options::merge_prefer_first(options { completion_callback_key = ignore_none }, __base);
+    filesystem_always_inline constexpr auto default_to(const auto& base) const {
+        return fs::options::merge_prefer_first(options { completion_callback_key = ignore_none }, base);
     }
 };
 
@@ -60,10 +60,10 @@ struct notifiable : callable<_Functor_, _OptionsValues_, completion_callback_opt
     using func_t = _Functor_<_OptionsValues_>;
 
     template <class ... _Args_>
-    filesystem_always_inline constexpr auto behavior(_Args_&& ... __args) const
-        fs_noexcept_if(func_t::deferred_call(std::forward<_Args_>(__args)...))
+    filesystem_always_inline constexpr auto behavior(_Args_&& ... args) const
+        fs_noexcept_if(func_t::deferred_call(std::forward<_Args_>(args)...))
     {
-        return func_t::deferred_call(std::forward<_Args_>(__args)...);
+        return func_t::deferred_call(std::forward<_Args_>(args)...);
     }
 };
 

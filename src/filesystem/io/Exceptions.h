@@ -7,23 +7,15 @@
 
 __FILESYSTEM_IO_NAMESPACE_BEGIN
 
-inline system::__fs_win_error __get_last_win_error() noexcept {
-    return system::__fs_win_error(GetLastError());
-}
-
-inline system::io_error __get_last_io_error() noexcept {
-	return __from_win32_error(__get_last_win_error());
-}
-
 class filesystem_error : public std::system_error {
 public:
-    filesystem_error(const std::string& __message, const std::error_code __error_code):
-        system_error(__error_code, __message), __what(std::system_error::what())
+    filesystem_error(const std::string& message, const std::error_code error_code):
+        system_error(error_code, message), _what(std::system_error::what())
     {}
 
-    filesystem_error(const std::string& __message, const io::path& __path, const std::error_code __error_code):
-        system_error(__error_code, __message), _path(__path),
-        __what(std::system_error::what())
+    filesystem_error(const std::string& message, const io::path& path, const std::error_code error_code):
+        system_error(error_code, message), _path(path),
+        _what(std::system_error::what())
     {}
 
     const io::path& path() const noexcept {
@@ -31,11 +23,11 @@ public:
     }
 
     const char* what() const noexcept override {
-        return __what.c_str();
+        return _what.c_str();
     }
 private:
     io::path _path;
-    std::string __what;
+    std::string _what;
 };
 
 

@@ -5,14 +5,14 @@
 
 __FILESYSTEM_SYSTEM_NAMESPACE_BEGIN
 
-enum class __code_page : u32 {
-	__acp = 0,
-	__utf8 = 65001,
-	__utf7 = 65000
+enum class code_page : u32 {
+	acp = 0,
+	utf8 = 65001,
+	utf7 = 65000
 };
 
-inline __code_page __current_thread_code_page() noexcept {
-	return __code_page(___lc_codepage_func());
+inline code_page current_thread_code_page() noexcept {
+	return code_page(___lc_codepage_func());
 }
 
 __FILESYSTEM_SYSTEM_NAMESPACE_END

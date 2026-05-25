@@ -17,8 +17,8 @@ template <auto _Keyword_, class _Options_, class _Type_>
 concept match_option = concepts::same_as<_Type_, fetch_t<_Keyword_, _Options_>>;
 
 inline constexpr struct { 
-    filesystem_always_inline auto operator()(auto, auto __x) const {
-        return __x; 
+    filesystem_always_inline auto operator()(auto, auto x) const {
+        return x; 
     } 
 } return_2nd = {};
 
@@ -27,22 +27,22 @@ struct strict_elementwise_callable: callable<_Function_, _OptionsValues_, _Optio
     using base_t = callable<_Function_, _OptionsValues_, _Options_...>;
     using func_t =  _Function_<_OptionsValues_>;
 
-    template <callable_options __Options_, class _Type_, class ... _Types_>
-    constexpr filesystem_always_inline auto behaviour(const __Options_& __options, 
-        _Type_ __first, _Types_ ... __args) const
+    template <callable_options Options_, class _Type_, class ... _Types_>
+    constexpr filesystem_always_inline auto behaviour(const Options_& options, 
+        _Type_ first, _Types_ ... args) const
     {
-        if constexpr (requires{ func_t::deferred_call(__options, __first, __args...); }) return func_t::deferred_call(__options, __first, __args...);
+        if constexpr (requires{ func_t::deferred_call(options, first, args...); }) return func_t::deferred_call(options, first, args...);
         else return ignore{};
     }
 };
 
 template <class _Callable_, class ... _Args_>
-constexpr filesystem_always_inline auto __dispatch_call(const _Callable_& __callable, _Args_&& ... __args)
-    fs_noexcept_if(__callable.behavior(__callable.options(), std::forward<_Args_>(__args)...))
+constexpr filesystem_always_inline auto dispatch_call(const _Callable_& callable, _Args_&& ... args)
+    fs_noexcept_if(callable.behavior(callable.options(), std::forward<_Args_>(args)...))
 {
-    using _ReturnType = decltype(__callable(std::forward<_Args_>(__args)...));
-    if constexpr (std::is_void_v<_ReturnType>) __callable.behavior(__callable.options(), std::forward<_Args_>(__args)...);
-    else return __callable.behavior(__callable.options(), std::forward<_Args_>(__args)...);
+    using _ReturnType = decltype(callable(std::forward<_Args_>(args)...));
+    if constexpr (std::is_void_v<_ReturnType>) callable.behavior(callable.options(), std::forward<_Args_>(args)...);
+    else return callable.behavior(callable.options(), std::forward<_Args_>(args)...);
 }
 
 __FILESYSTEM_OPTIONS_NAMESPACE_END

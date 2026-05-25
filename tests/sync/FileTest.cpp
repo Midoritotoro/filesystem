@@ -218,79 +218,148 @@ void test_exists_false() {
 }
 
 void test_create_file() {
-    remove_if_exists(test_create_file_name);
-    auto [file, err] = fs::io::create(fs::io::path(STR("fs_create_test.txt")));
-    filesystem_assert(file.is_open());
-    filesystem_assert(fs::io::exists(fs::io::path(STR("fs_create_test.txt"))));
-    remove_if_exists(test_create_file_name);
-}
-
-void test_create_existing_file() {
     create_text_file(test_create_file_name, "abc");
-    auto [file, err] = fs::io::create(fs::io::path(STR("fs_create_test.txt")));
-    filesystem_assert(file.is_open());
-    filesystem_assert(fs::io::exists(fs::io::path(STR("fs_create_test.txt"))));
+
+    const auto path = fs::io::path(STR("fs_create_test.txt"));
+
+    {
+        auto [file, err] = fs::io::create[fs::io::if_not_exists](path);
+        filesystem_assert(file.is_open());
+        filesystem_assert(fs::io::exists(fs::io::path(STR("fs_create_test.txt"))));
+    }
+
+    {
+        fs::io::create[fs::io::if_not_exists][fs::options::on_completion([](fs::system::io_error err, fs::io::file file) {
+            filesystem_assert(file.is_open()); filesystem_assert(fs::io::exists(fs::io::path(STR("fs_create_test.txt"))));
+        })](path);
+    }
+
+    {
+        auto [file, err] = fs::io::create(path);
+        filesystem_assert(!file.is_open());
+        filesystem_assert(fs::io::exists(fs::io::path(STR("fs_create_test.txt"))));
+        filesystem_assert(!err); 
+        filesystem_assert(err == fs::system::io_error::file_exists);
+    }
+
+    {
+        fs::io::create[fs::options::on_completion([](fs::system::io_error err, fs::io::file file) {
+            filesystem_assert(!file.is_open());
+            filesystem_assert(fs::io::exists(fs::io::path(STR("fs_create_test.txt"))));
+            filesystem_assert(!err);
+            filesystem_assert(err == fs::system::io_error::file_exists);
+        })](path);
+    }
+
     remove_if_exists(test_create_file_name);
+
+    {
+        auto [file, err] = fs::io::create(path);
+        filesystem_assert(file.is_open());
+        filesystem_assert(fs::io::exists(fs::io::path(STR("fs_create_test.txt"))));
+        filesystem_assert(err); 
+    }
+
+    {
+        fs::io::create[fs::options::on_completion([](fs::system::io_error err, fs::io::file file) {
+            filesystem_assert(!file.is_open());
+            filesystem_assert(fs::io::exists(fs::io::path(STR("fs_create_test.txt"))));
+            filesystem_assert(!err);
+            filesystem_assert(err == fs::system::io_error::file_exists);
+        })](path);
+    }
+
+    {
+        auto [file, err] = fs::io::create[fs::io::always](path);
+        filesystem_assert(file.is_open());
+        filesystem_assert(fs::io::exists(fs::io::path(STR("fs_create_test.txt"))));
+        filesystem_assert(err);
+    }
+
+    {
+        fs::io::create[fs::io::always][fs::options::on_completion([](fs::system::io_error err, fs::io::file file) {
+            filesystem_assert(file.is_open());
+            filesystem_assert(fs::io::exists(fs::io::path(STR("fs_create_test.txt"))));
+            filesystem_assert(err);
+        })](path);
+    }
+ 
+    remove_if_exists(test_create_file_name);
+
+    {
+        auto [file, err] = fs::io::create[fs::io::always](path);
+        filesystem_assert(file.is_open());
+        filesystem_assert(fs::io::exists(fs::io::path(STR("fs_create_test.txt"))));
+        filesystem_assert(err);
+    }
+
+    {
+        fs::io::create[fs::io::always][fs::options::on_completion([](fs::system::io_error err, fs::io::file file) {
+            filesystem_assert(file.is_open());
+            filesystem_assert(fs::io::exists(fs::io::path(STR("fs_create_test.txt"))));
+            filesystem_assert(err);
+        })](path);
+    }
 }
 
-//void test_write_whole_buffer() {
-//    remove_if_exists(test_write_file_name);
-//
-//    auto file = fs::io::open[fs::io::always][fs::io::for_write](fs::io::path(STR("fs_write_test.txt")));
-//
-//    const char data[] = "abcdef";
-//
-//    auto written = fs::io::write(file, fs::io::buffer(data), 0);
-//    filesystem_assert(written == sizeof(data));
-//
-//    file.reset();
-//
-//    std::ifstream in(test_write_file_name, std::ios::binary);
-//
-//    std::string text;
-//    text.resize(sizeof(data));
-//
-//    in.read(text.data(), static_cast<std::streamsize>(text.size()));
-//
-//    filesystem_assert(text == "abcdef");
-//
-//    remove_if_exists(test_write_file_name);
-//}
-//
-//void test_write_with_offset() {
-//    create_text_file(test_write_file_name, "0123456789");
-//
-//    auto file = fs::io::open[fs::io::for_write](fs::io::path(STR("fs_write_test.txt")));
-//    const char data[] = "ABC";
-//
-//    auto written = fs::io::write(file, fs::io::buffer(data), 4);
-//
-//    filesystem_assert(written == sizeof(data));
-//
-//    file.reset();
-//
-//    std::ifstream in(test_write_file_name, std::ios::binary);
-//
-//    std::string text;
-//    text.resize(10);
-//
-//    in.read(text.data(), 10);
-//
-//    filesystem_assert(text == "0123ABC789");
-//
-//    remove_if_exists(test_write_file_name);
-//}
-//
-//void test_write_empty_buffer() {
-//    remove_if_exists(test_write_file_name);
-//
-//    auto file = fs::io::open[fs::io::always][fs::io::for_write](fs::io::path(STR("fs_write_test.txt")));
-//    const char dummy = 0;
-//    auto written = fs::io::write(file, fs::io::buffer(&dummy, &dummy), 0);
-//
-//    filesystem_assert(written == 0);
-//    remove_if_exists(test_write_file_name);
-//}
+void test_write_whole_buffer() {
+    remove_if_exists(test_write_file_name);
+
+    auto [file, err1] = fs::io::open[fs::io::always][fs::io::for_write](fs::io::path(STR("fs_write_test.txt")));
+
+    const char data[] = "abcdef";
+
+    auto [written, err2] = fs::io::write(file, fs::io::buffer(data), 0);
+    filesystem_assert(written == sizeof(data));
+
+    file.reset();
+
+    std::ifstream in(test_write_file_name, std::ios::binary);
+
+    std::string text;
+    text.resize(sizeof(data) - 1);
+
+    in.read(text.data(), static_cast<std::streamsize>(text.size()));
+
+    filesystem_assert(text == "abcdef");
+
+    remove_if_exists(test_write_file_name);
+}
+
+void test_write_with_offset() {
+    create_text_file(test_write_file_name, "0123456789");
+
+    auto [file, err1] = fs::io::open[fs::io::for_write](fs::io::path(STR("fs_write_test.txt")));
+    const char data[] = "ABC";
+
+    auto [written, err2] = fs::io::write(file, fs::io::buffer(data), 4);
+
+    filesystem_assert(written == sizeof(data));
+
+    file.reset();
+
+    std::ifstream in(test_write_file_name, std::ios::binary);
+
+    std::string text;
+    text.resize(7);
+
+    in.read(text.data(), 7);
+
+    filesystem_assert(text == "0123ABC");
+
+    remove_if_exists(test_write_file_name);
+}
+
+void test_write_empty_buffer() {
+    remove_if_exists(test_write_file_name);
+
+    auto [file, err1] = fs::io::open[fs::io::always][fs::io::for_write](fs::io::path(STR("fs_write_test.txt")));
+    const char dummy = 0;
+    auto [written, err2] = fs::io::write(file, fs::io::buffer(&dummy, &dummy), 0);
+
+    filesystem_assert(written == 0);
+    remove_if_exists(test_write_file_name);
+}
 
 int main() {
     test_file_default_constructor();
@@ -315,11 +384,10 @@ int main() {
     test_exists_false();
 
     test_create_file();
-    test_create_existing_file();
 
-    //test_write_whole_buffer();
-    //test_write_with_offset();
-    //test_write_empty_buffer();
+    test_write_whole_buffer();
+    test_write_with_offset();
+    test_write_empty_buffer();
 
     return 0;
 }

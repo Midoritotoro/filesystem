@@ -14,32 +14,32 @@ struct as_keyword {
     template <class _Type_>
     static filesystem_always_inline constexpr bool accept() {
         if constexpr(concepts::same_as<std::remove_cvref_t<_Type_>, _Keyword_>) return true;
-        else if constexpr(concepts::__checks_for<_Keyword_, _Type_>) return _Keyword_::template check<_Type_>();
+        else if constexpr(concepts::checks_for<_Keyword_, _Type_>) return _Keyword_::template check<_Type_>();
         else return true;
     }
 
     template <class _Type_>
-    constexpr filesystem_always_inline auto operator=(_Type_&& __value) const noexcept
+    constexpr filesystem_always_inline auto operator=(_Type_&& value) const noexcept
         requires(accept<_Type_>())
     {
-        return option<_Keyword_, _Type_>{std::forward<_Type_>(__value)};
+        return option<_Keyword_, _Type_>{std::forward<_Type_>(value)};
     }
 
     template <class _Type_>
-    constexpr filesystem_always_inline auto operator|(_Type_&& __value) const noexcept
+    constexpr filesystem_always_inline auto operator|(_Type_&& value) const noexcept
         requires(accept<_Type_>()) 
     {
-        return __type_or<_Keyword_, std::remove_cvref_t<_Type_>>{std::forward<_Type_>(__value)};
+        return type_or<_Keyword_, std::remove_cvref_t<_Type_>>{std::forward<_Type_>(value)};
     }
 
     template <class _Function_> 
-    constexpr filesystem_always_inline auto operator|(call<_Function_>&& __callable) const noexcept {
-        return __type_or<_Keyword_, call<_Function_>>{std::forward<_Function_>(__callable)};
+    constexpr filesystem_always_inline auto operator|(call<_Function_>&& callable) const noexcept {
+        return type_or<_Keyword_, call<_Function_>>{std::forward<_Function_>(callable)};
     }
 
     template <concepts::option ... _Options_>
-    constexpr filesystem_always_inline decltype(auto) operator()(_Options_&& ... __options) const {
-        return fetch(_Keyword_{}, std::forward<_Options_>(__options)...); 
+    constexpr filesystem_always_inline decltype(auto) operator()(_Options_&& ... options) const {
+        return fetch(_Keyword_{}, std::forward<_Options_>(options)...); 
     }
 };
 
@@ -91,13 +91,13 @@ constexpr flag_keyword() {}
     }
 
     template <class _Type_>
-    constexpr filesystem_always_inline auto operator|(_Type_&& __value) const noexcept {
-        return __type_or<flag_keyword, std::remove_cvref_t<_Type_>>{std::forward<_Type_>(__value)};
+    constexpr filesystem_always_inline auto operator|(_Type_&& value) const noexcept {
+        return type_or<flag_keyword, std::remove_cvref_t<_Type_>>{std::forward<_Type_>(value)};
     }
 
     template <class _Function_> 
-    constexpr filesystem_always_inline auto operator|(call<_Function_>&& __callable) const noexcept {
-        return __type_or<flag_keyword, call<_Function_>>{std::forward<_Function_>(__callable)};
+    constexpr filesystem_always_inline auto operator|(call<_Function_>&& callable) const noexcept {
+        return type_or<flag_keyword, call<_Function_>>{std::forward<_Function_>(callable)};
     }
 
     constexpr filesystem_always_inline auto operator()(const keyword_type&) const noexcept {
@@ -113,67 +113,69 @@ constexpr flag_keyword() {}
 };
 
 template <class _Tag_>
-constexpr filesystem_always_inline flag_keyword<_Tag_> flag(_Tag_ __id) noexcept {
+constexpr filesystem_always_inline flag_keyword<_Tag_> flag(_Tag_ id) noexcept {
     return {}; 
 }
 
 template <class _ID_>
-constexpr filesystem_always_inline any_keyword<_ID_> keyword(_ID_ __id) noexcept {
+constexpr filesystem_always_inline any_keyword<_ID_> keyword(_ID_ id) noexcept {
     return {}; 
 }
 
 template <template <class> class  _Checker_, class _ID_>
-constexpr filesystem_always_inline checked_keyword<_ID_, _Checker_> keyword(_ID_ __id) noexcept {
+constexpr filesystem_always_inline checked_keyword<_ID_, _Checker_> keyword(_ID_ id) noexcept {
     return {}; 
 }
 
 template <class _Type_, class _ID_>
-constexpr filesystem_always_inline typed_keyword<_ID_, _Type_> keyword(_ID_ __id) noexcept {
+constexpr filesystem_always_inline typed_keyword<_ID_, _Type_> keyword(_ID_ id) noexcept {
     return {};
 }
 
 template<typename... T> 
 struct types {};
 
-template <class _Settings_, template <class...> class _List_ = types> 
-struct __keywords;
+namespace detail {
+    template <class _Settings_, template <class...> class _List_ = types>
+    struct keywords;
 
-template <class _Settings_, template <class...> class _List_ = types> 
-struct __values;
-        
-template <class ... _Options_, template <class...> class _List_>
-struct __keywords<settings<_Options_...>, _List_> {
-    using type = _List_<typename _Options_::keyword_type...>;
-};
+    template <class _Settings_, template <class...> class _List_ = types>
+    struct values;
 
-template <class ... _Options_, template <class...> class _List_>
-struct __values<settings<_Options_...>, _List_> {
-    using type = _List_<typename _Options_::stored_value_type...>;
-};
+    template <class ... _Options_, template <class...> class _List_>
+    struct keywords<settings<_Options_...>, _List_> {
+        using type = _List_<typename _Options_::keyword_type...>;
+    };
+
+    template <class ... _Options_, template <class...> class _List_>
+    struct values<settings<_Options_...>, _List_> {
+        using type = _List_<typename _Options_::stored_value_type...>;
+    };
+} // namespace detail
 
 template <class _Settings_, template <class...> class _List_ = types>
-using __keywords_t = typename __keywords<_Settings_, _List_>::type;
+using keywords_t = typename detail::keywords<_Settings_, _List_>::type;
 
 template <class _Settings_, template <class...> class _List_ = types>
-using __values_t = typename __values<_Settings_, _List_>::type;
+using values_t = typename detail::values<_Settings_, _List_>::type;
 
 
 template <template <class...> class _List_, class ... _Options_>
 constexpr filesystem_always_inline auto keywords(const settings<_Options_...>&) noexcept {
-    return __keywords_t<settings<_Options_...>, _List_>{
-        typename _Options_::__keyword_type{}...};
+    return keywords_t<settings<_Options_...>, _List_>{
+        typename _Options_::keyword_type{}...};
 }
 
 template <template <class...> class _List_, class ... _Options_>
-constexpr filesystem_always_inline auto values(const settings<_Options_...>& __settings) noexcept {
-    return __values_t<settings<_Options_...>, _List_>{
-        __settings[typename _Options_::keyword_type{}]... };
+constexpr filesystem_always_inline auto values(const settings<_Options_...>& settings_) noexcept {
+    return values_t<settings<_Options_...>, _List_>{
+        settings_[typename _Options_::keyword_type{}]... };
 }
 
 template <concepts::settings _S1_, concepts::settings _S2_>
 struct is_equivalent_settings: 
-    std::bool_constant<is_equivalent<__keywords_t<_S1_, keys>, __keywords_t<_S2_, keys>>::value &&  
-    is_equivalent<__keywords_t<_S2_, keys>, __keywords_t<_S1_, keys>>::value>
+    std::bool_constant<is_equivalent<keywords_t<_S1_, keys>, keywords_t<_S2_, keys>>::value &&  
+    is_equivalent<keywords_t<_S2_, keys>, keywords_t<_S1_, keys>>::value>
 {};
 
 template <concepts::settings _S1_, concepts::settings _S2_>

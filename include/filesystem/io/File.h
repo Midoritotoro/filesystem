@@ -10,9 +10,9 @@ __FILESYSTEM_IO_NAMESPACE_BEGIN
 class file {
 public:
     file() noexcept {};
-    explicit file(const path& __path, system::handle __h) {
-        _handle = __h;
-        _path = __path;
+    explicit file(const path& p, system::handle h) {
+        _handle = h;
+        _path = p;
 
         filesystem_assert(_handle.available());
     }
@@ -21,15 +21,15 @@ public:
         _handle.destroy();
     }
 
-    file(file&& __other) noexcept {
-		_handle = std::move(__other._handle);
-		_path = std::move(__other._path);
+    file(file&& other) noexcept {
+		_handle = std::move(other._handle);
+		_path = std::move(other._path);
     }
 
-    file& operator=(file&& __other) noexcept {
-        if (this != &__other) {
-            _handle = std::move(__other._handle);
-            _path = std::move(__other._path);
+    file& operator=(file&& other) noexcept {
+        if (this != &other) {
+            _handle = std::move(other._handle);
+            _path = std::move(other._path);
         }
         return *this;
     }

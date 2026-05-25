@@ -39,24 +39,24 @@ using long32    = long;
 using f32 = float;
 using f64 = double;
 
-template <int>      struct IntegerForSize;
+template <int>      struct integer_for_size;
 
-template <>         struct IntegerForSize<1> { typedef u8  Unsigned; typedef i8  Signed; };
-template <>         struct IntegerForSize<2> { typedef u16 Unsigned; typedef i16 Signed; };
+template <>         struct integer_for_size<1> { typedef u8  Unsigned; typedef i8  Signed; };
+template <>         struct integer_for_size<2> { typedef u16 Unsigned; typedef i16 Signed; };
 
-template <>         struct IntegerForSize<4> { typedef u32 Unsigned; typedef i32 Signed; };
-template <>         struct IntegerForSize<8> { typedef u64 Unsigned; typedef i64 Signed; };
+template <>         struct integer_for_size<4> { typedef u32 Unsigned; typedef i32 Signed; };
+template <>         struct integer_for_size<8> { typedef u64 Unsigned; typedef i64 Signed; };
 
-template <class T>  struct IntegerForSizeof : IntegerForSize<sizeof(T)> { };
+template <class T>  struct integer_for_sizeof : integer_for_size<sizeof(T)> { };
 
-using registerint   = IntegerForSize<filesystem_processor_wordsize>::Signed;
-using registeruint  = IntegerForSize<filesystem_processor_wordsize>::Unsigned;
+using registerint   = integer_for_size<filesystem_processor_wordsize>::Signed;
+using registeruint  = integer_for_size<filesystem_processor_wordsize>::Unsigned;
 
-using uintptr       = IntegerForSizeof<void*>::Unsigned;
-using ptrdiff       = IntegerForSizeof<void*>::Signed;
+using uintptr       = integer_for_sizeof<void*>::Unsigned;
+using ptrdiff       = integer_for_sizeof<void*>::Signed;
 
 using intptr        = ptrdiff;
-using sizetype      = IntegerForSizeof<std::size_t>::Unsigned;
+using sizetype      = integer_for_sizeof<std::size_t>::Unsigned;
 
 using byte_t        = u8;
 using sbyte_t       = i8;

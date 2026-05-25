@@ -12,11 +12,11 @@
 __FILESYSTEM_IO_NAMESPACE_BEGIN
 
 class path {
-	using _Traits = _Path_traits;
-	using _Parser = _Path_parser;
+	using traits = Path_traits;
+	using parser = Path_parser;
 public:
-	using value_type = _Traits::__value_type;
-	using string_type = _Traits::__string_type;
+	using value_type = traits::value_type;
+	using string_type = traits::string_type;
 
 	enum format {
 		native_format,
@@ -25,41 +25,41 @@ public:
 	};
 
 	path() noexcept {}
-	path(const string_type& __path) : _path(__path) {}
+	path(const string_type& p) : _path(p) {}
 
-	path(const path& __path) {
-		_path = __path._path;
+	path(const path& p) {
+		_path = p._path;
 	}
 
-	path(path&& __path) noexcept {
-		_path = std::move(__path._path);
-		__path.clear();
+	path(path&& p) noexcept {
+		_path = std::move(p._path);
+		p.clear();
 	}
 
 	template <str_type _Source_>
-	path(const _Source_& __source, format __fmt = auto_format) {
-		__str_cvt(_path, __source);
+	path(const _Source_& source, format fmt = auto_format) {
+		str_cvt(_path, source);
 	}
 
 	template <class _InputIterator_>
-	path(_InputIterator_ __first, _InputIterator_ __last) {
+	path(_InputIterator_ first, _InputIterator_ last) {
 		static_assert(is_character_v<std::iter_value_t<_InputIterator_>>, "invalid value_type");
-		__str_cvt(_path, __first, __last);
+		str_cvt(_path, first, last);
 	}
 
-	path& operator=(const path& __path) {
-		_path = __path._path;
+	path& operator=(const path& p) {
+		_path = p._path;
 		return *this;
 	}
 
-	path& operator=(path&& __path) {
-		_path = std::move(__path._path);
-		__path.clear();
+	path& operator=(path&& p) {
+		_path = std::move(p._path);
+		p.clear();
 		return *this;
 	}
 
-	path& operator=(string_type&& __path) {
-		_path = std::move(__path);
+	path& operator=(string_type&& p) {
+		_path = std::move(p);
 		return *this;
 	}
 
@@ -80,36 +80,36 @@ public:
 	}
 
 	path& make_preferred() noexcept {
-		if constexpr (windows) std::ranges::replace(_path, L'/', _Traits::__preferred_separator);
+		if constexpr (windows) std::ranges::replace(_path, L'/', traits::preferred_separator);
 		return *this;
 	}
 
 	path& remove_filename() noexcept {
-		_Parser::__remove_filename(_path);
+		parser::remove_filename(_path);
 		return *this;
 	}
 
-	path& replace_filename(const path& __replacement) noexcept {
+	path& replace_filename(const path& replacement) noexcept {
 		remove_filename();
-		return *this += __replacement._path;
+		return *this += replacement._path;
 	}
 
-	path& replace_extension(const path& __replacement = path()) noexcept {
-		_Parser::__remove_extension(_path);
-		return *this += (__replacement._path[0] == _Traits::__dot ? __replacement._path : _Traits::__dot + __replacement._path);
+	path& replace_extension(const path& replacement = path()) noexcept {
+		parser::remove_extension(_path);
+		return *this += (replacement._path[0] == traits::dot ? replacement._path : traits::dot + replacement._path);
 	}
 
-	path& operator+=(const path& __path) {
-		return operator+=(__path._path);
+	path& operator+=(const path& p) {
+		return operator+=(p._path);
 	}
 
-	path& operator+=(const string_type& __str) {
-		_path.append(__str);
+	path& operator+=(const string_type& str) {
+		_path.append(str);
 		return *this;
 	}
 
-	path& operator+=(std::basic_string_view<value_type> __str) {
-		return operator+=(string_type(__str));
+	path& operator+=(std::basic_string_view<value_type> str) {
+		return operator+=(string_type(str));
 	}
 
 	path& operator+=(const value_type* ptr) {
@@ -121,32 +121,32 @@ public:
 	}
 
 	template <class _CharType_>
-	path& operator+=(_CharType_ __x) {
+	path& operator+=(_CharType_ x) {
 		return *this;
 	}
 
 	template <class _Source_>
-	path& operator+=(const _Source_& __source) {
+	path& operator+=(const _Source_& source) {
 		return *this;
 	}
 
 	template <class _Source_>
-	path& concat(const _Source_& __source) {
+	path& concat(const _Source_& source) {
 		return *this;
 	}
 
 	template <class _InputIterator_>
-	path& concat(_InputIterator_ __first, _InputIterator_ __last) {
+	path& concat(_InputIterator_ first, _InputIterator_ last) {
 		return *this;
 	}
 	
 	path root_name() const noexcept {
-		return path(_path.data(), _Parser::__find_root_name_end(_path.data(), _path.data() + _path.size()));
+		return path(_path.data(), parser::find_root_name_end(_path.data(), _path.data() + _path.size()));
 	}
 
 	path root_directory() const noexcept {
 		if (has_root_directory())
-			return path(_Parser::__find_root_name_end(_path.data(), _path.data() + _path.size()), _path.data() + _path.size());
+			return path(parser::find_root_name_end(_path.data(), _path.data() + _path.size()), _path.data() + _path.size());
 
 		return path();
 	}
@@ -172,7 +172,7 @@ public:
 	}
 
 	path extension() const noexcept {
-		return path(_Parser::__find_extension(_path), _path.end());
+		return path(parser::find_extension(_path), _path.end());
 	}
 
 	bool empty() const noexcept {
@@ -184,7 +184,7 @@ public:
 	}
 
 	bool has_root_directory() const noexcept {
-		return false;// return _Parser::__has_root_directory(__path);
+		return false;// return parser::has_root_directory(__path);
 	}
 
 	bool has_root_path() const noexcept {
@@ -216,7 +216,7 @@ public:
 	}
 
 	bool is_relative() const noexcept {
-		return !__any_separator(_path[0]) && !(_path[1] == _Traits::__colon);
+		return !any_separator(_path[0]) && !(_path[1] == traits::colon);
 	}
 
 	path lexically_normal() const noexcept {

@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <src/filesystem/io/PathTraits.h>
+#include <src/filesystem/Assert.h>
 #include <ranges>
 #include <string>
 #include <string_view>
@@ -8,82 +9,82 @@
 __FILESYSTEM_IO_NAMESPACE_BEGIN
 
 struct {
-	filesystem_static_operator bool operator()(_Path_traits::__value_type __c) filesystem_const_operator noexcept {
-		if constexpr (windows) return __c == _Path_traits::__preferred_separator || __c == _Path_traits::__slash;
-		else return __c == _Path_traits::__slash;
+	filesystem_static_operator bool operator()(Path_traits::value_type c) filesystem_const_operator noexcept {
+		if constexpr (windows) return c == Path_traits::preferred_separator || c == Path_traits::slash;
+		else return c == Path_traits::slash;
 	}
-} __any_separator;
+} any_separator;
 
-class _Path_parser {
-	using _Traits = _Path_traits;
+class Path_parser {
+	using traits = Path_traits;
 
-	using __str_type = _Traits::__string_type;
-	using __value_type = _Traits::__value_type;
+	using str_type = traits::string_type;
+	using value_type = traits::value_type;
 public:
-    using view_type = std::basic_string_view<__value_type, std::char_traits<__value_type>>;
+    using view_type = std::basic_string_view<value_type, std::char_traits<value_type>>;
 
-	static void __remove_filename(__str_type& __path) {
-		const auto __filename = __find_filename(__path);
-		(__filename == __path.end()) ? __path.clear() : __path.resize((__filename + 1) - __path.begin());
+	static void remove_filename(str_type& path) {
+		const auto filename = find_filename(path);
+		(filename == path.end()) ? path.clear() : path.resize((filename + 1) - path.begin());
 	}
 	
-	static void __remove_extension(__str_type& __path) {
-		filesystem_debug_assert(!__path.empty());
-		__path.erase(__find_extension(__path), __path.end());
+	static void remove_extension(str_type& path) {
+		filesystem_debug_assert(!path.empty());
+		path.erase(find_extension(path), path.end());
 	}
 
-	static __str_type::const_iterator __find_extension(const __str_type& __path) {
-		const auto __filename = __find_filename(__path);
-		return std::ranges::find(__filename, __path.end(), _Traits::__dot);
+	static str_type::const_iterator find_extension(const str_type& path) {
+		const auto filename = find_filename(path);
+		return std::ranges::find(filename, path.end(), traits::dot);
 	}
 
-	static __str_type::const_iterator __find_filename(const __str_type& __path) {
-		const auto __found = std::ranges::begin(std::ranges::find_last_if(__path, __any_separator));
-		return __found == __path.end() ? __path.begin() : __found;
+	static str_type::const_iterator find_filename(const str_type& path) {
+		const auto found = std::ranges::begin(std::ranges::find_last_if(path, any_separator));
+		return found == path.end() ? path.begin() : found;
 	}
 
-    static bool __is_drive_prefix(const __value_type* __first) {
-        u32 __v;
-        std::memcpy(&__v, __first, sizeof(__v));
+    static bool is_drive_prefix(const value_type* first) {
+        u32 v;
+        std::memcpy(&v, first, sizeof(v));
 
-        __v &= 0xFFFF'FFDFu;
-        __v -= (static_cast<unsigned int>(L':') << (sizeof(wchar_t) * CHAR_BIT)) | L'A';
+        v &= 0xFFFF'FFDFu;
+        v -= (static_cast<unsigned int>(L':') << (sizeof(wchar_t) * CHAR_BIT)) | L'A';
 
-        return __v < 26;
+        return v < 26;
     }
 
-    static bool __has_drive_letter_prefix(const __value_type* __first, const __value_type* __last) {
-        return __last - __first >= 2 && __is_drive_prefix(__first);
+    static bool has_drive_letter_prefix(const value_type* first, const value_type* last) {
+        return last - first >= 2 && is_drive_prefix(first);
     }
 
-    static const __value_type* __find_root_name_end(const __value_type* __first, const __value_type* __last) {
-        if (__last - __first < 2) return __first;
-        if (__has_drive_letter_prefix(__first, __last)) return __first + 2;
-        if (!__any_separator(__first[0])) return __first;
+    static const value_type* find_root_name_end(const value_type* first, const value_type* last) {
+        if (last - first < 2) return first;
+        if (has_drive_letter_prefix(first, last)) return first + 2;
+        if (!any_separator(first[0])) return first;
 
-        if (__last - __first >= 4 && __any_separator(__first[3]) && (__last - __first == 4 || !__any_separator(__first[4]))
-            && ((__any_separator(__first[1]) && (__first[2] == L'?' || __first[2] == L'.')) || (__first[1] == L'?' && __first[2] == L'?')))
-            return __first + 3;
+        if (last - first >= 4 && any_separator(first[3]) && (last - first == 4 || !any_separator(first[4]))
+            && ((any_separator(first[1]) && (first[2] == L'?' || first[2] == L'.')) || (first[1] == L'?' && first[2] == L'?')))
+            return first + 3;
 
-        if (__last - __first >= 3 && __any_separator(__first[1]) && !__any_separator(__first[2])) 
-            return std::find_if(__first + 3, __last, __any_separator);
+        if (last - first >= 3 && any_separator(first[1]) && !any_separator(first[2])) 
+            return std::find_if(first + 3, last, any_separator);
 
-        return __first;
+        return first;
     }
 
-    static const __value_type* __find_ext(const __value_type* __fname, const __value_type* __ads) {
-        auto __ext = __ads;
+    static const value_type* find_ext(const value_type* fname, const value_type* ads) {
+        auto ext = ads;
 
-        if (__fname == __ext) return __ads;
-        if (__fname == --__ext) return __ads;
+        if (fname == ext) return ads;
+        if (fname == --ext) return ads;
 
-        if (*__ext == L'.') {
-            if (__fname == __ext - 1 && __ext[-1] == L'.') return __ads;
-            else return __ext;
+        if (*ext == L'.') {
+            if (fname == ext - 1 && ext[-1] == L'.') return ads;
+            else return ext;
         }
 
-        while (__fname != --__ext) if (*__ext == L'.') return __ext;
-        return __ads;
+        while (fname != --ext) if (*ext == L'.') return ext;
+        return ads;
     }
 };
 
