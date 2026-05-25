@@ -1,7 +1,7 @@
 #pragma once 
 
 #include <src/filesystem/options/Callable.h>
-#include <src/filesystem/system/WindowsErrors.h>
+#include <src/filesystem/system/IoError.h>
 
 namespace fs::io {
     class file;
@@ -43,13 +43,6 @@ struct completion_callback_option {
         return fs::options::merge_prefer_first(__base, options{ __options });
     }
 
-	template <class _Function_>
-    filesystem_always_inline constexpr auto process(const auto& __base, _Function_ __option) const
-        requires(std::is_invocable_v<_Function_, system::__fs_win_error, fs::io::file>)
-    {
-        return process(__base, completion_callback_key = on_completion(__option));
-    }
-
     filesystem_always_inline constexpr auto process(const auto& __base,
         on_completion_expression auto __option) const noexcept
     {
@@ -63,7 +56,7 @@ struct completion_callback_option {
 
 template <template <class> class _Functor_, class _OptionsValues_, class ... _Options_>
 struct notifiable : callable<_Functor_, _OptionsValues_, completion_callback_option, _Options_...> {
-    using base_t = callable<_Functor_, _OptionsValues_, _Options_...>;
+    using base_t = callable<_Functor_, _OptionsValues_, completion_callback_option, _Options_...>;
     using func_t = _Functor_<_OptionsValues_>;
 
     template <class ... _Args_>

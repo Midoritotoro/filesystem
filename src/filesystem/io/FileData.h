@@ -68,13 +68,13 @@ enum class __fs_win_share_mode : u32 {
 };
 
 enum class __fs_win_file_access_mode : u32 {
-	__read  = GENERIC_READ,
-	__write = GENERIC_WRITE,
-
-    __delete = DELETE,
-    __file_read_attributes = FILE_READ_ATTRIBUTES,
-    __file_write_attributes = FILE_WRITE_ATTRIBUTES,
-    __file_generic_write = FILE_GENERIC_WRITE
+    __read                      = GENERIC_READ,
+    __write                     = GENERIC_WRITE,
+    __delete                    = DELETE,
+    __file_read_attributes      = FILE_READ_ATTRIBUTES,
+    __file_write_attributes     = FILE_WRITE_ATTRIBUTES,
+    __all_attributes            = __file_read_attributes | __file_write_attributes | __delete,
+    __file_generic_write        = FILE_GENERIC_WRITE
 };
 
 

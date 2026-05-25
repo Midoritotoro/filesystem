@@ -110,7 +110,7 @@ public:
 	using callable_tag_type = _Configurable_open;
 	using return_type = std::conditional_t<__has_callback, void, std::pair<file, system::io_error>>;
 
-	filesystem_nodiscard filesystem_always_inline return_type operator()(const path& __path) const {
+	filesystem_always_inline return_type operator()(const path& __path) const {
 		return fs::options::__dispatch_call(*this, __path);
 	}
 
@@ -128,20 +128,27 @@ public:
 
 template <class _Options_>
 struct _Configurable_read : fs::options::notifiable<_Configurable_read, _Options_, async_option> {
+	using on_complete_callback_type = fs::options::fetch_t<fs::options::completion_callback_key, _Options_>;
+	static constexpr auto __has_callback = !options::concepts::same_as<on_complete_callback_type, fs::options::unknown_key>;
+
+	using return_type = std::conditional_t<__has_callback, void, std::pair<sizetype, system::io_error>>;
 	using callable_tag_type = _Configurable_read;
 
-	filesystem_nodiscard filesystem_always_inline sizetype operator()(
+	filesystem_always_inline return_type operator()(
 		file& __file, mutable_buffer __buffer, sizetype __offset) const
 	{
 		return fs::options::__dispatch_call(*this, __file, __buffer, __offset);
 	}
 
-	static filesystem_always_inline auto deferred_call(
+	static filesystem_always_inline return_type deferred_call(
 		auto __options, file& __file, mutable_buffer __buffer, sizetype __offset)
 	{
-		//if constexpr (_Options_::contains(async)) return __fs_read_file_async(__file, __buffer, __offset);
-		//else 
-		return __fs_read_file(__file, __buffer, __offset);
+		auto [__size, __err] = __fs_read_file(__file, __buffer, __offset);
+
+		if constexpr (__has_callback)
+			std::invoke(__options[fs::options::completion_callback_key].callback(), __err, __size);
+		else
+			return { __size, __err };
 	}
 };
 
@@ -149,7 +156,7 @@ template <class _Options_>
 struct _Configurable_write : fs::options::notifiable<_Configurable_write, _Options_, async_option> {
 	using callable_tag_type = _Configurable_write;
 
-	filesystem_nodiscard filesystem_always_inline sizetype operator()(
+	filesystem_always_inline sizetype operator()(
 		file& __file, const_buffer __buffer, sizetype __offset) const
 	{
 		return fs::options::__dispatch_call(*this, __file, __buffer, __offset);
@@ -187,17 +194,25 @@ private:
 		else return __fs_win_file_creation_disposition::__create_new;
 	}
 public:
+	using on_complete_callback_type = fs::options::fetch_t<fs::options::completion_callback_key, _Options_>;
+	static constexpr auto __has_callback = !options::concepts::same_as<on_complete_callback_type, fs::options::unknown_key>;
+
 	using callable_tag_type = _Configurable_create;
-	using return_type = file;
+	using return_type = std::conditional_t<__has_callback, void, std::pair<file, system::io_error>>;
 
 	filesystem_nodiscard filesystem_always_inline return_type operator()(const path& __path) const {
 		return fs::options::__dispatch_call(*this, __path);
 	}
 
-	static filesystem_always_inline auto deferred_call(auto __options, const path& __path) {
-		return __fs_create_file(__path, __fs_access_flags_from_options<_Options_>(),
+	static filesystem_always_inline return_type deferred_call(auto __options, const path& __path) {
+		auto [__file, __err] = __fs_create_file(__path, __fs_access_flags_from_options<_Options_>(),
 			__fs_share_flags_from_options<_Options_>(), __disposition(),
 			__fs_file_attributes_from_options<_Options_>(), __fs_file_flags_from_options<_Options_>());
+
+		if constexpr (__has_callback)
+			std::invoke(__options[fs::options::completion_callback_key].callback(), __err, std::move(__file));
+		else
+			return { std::move(__file), __err };
 	}
 };
 

@@ -15,7 +15,7 @@ struct _Overlapped : OVERLAPPED {
         hEvent = CreateEventW(0, TRUE, FALSE, 0);
 
         if (hEvent) hEvent = reinterpret_cast<HANDLE>(reinterpret_cast<DWORD_PTR>(hEvent) | 1);
-        else throw filesystem_error("Failed to create overlapped event", __get_last_error_code());
+        else throw filesystem_error("Failed to create overlapped event", system::make_error_code(__get_last_io_error()));
 	}
 
 	~_Overlapped() {

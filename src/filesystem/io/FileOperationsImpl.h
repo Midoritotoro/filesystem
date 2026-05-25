@@ -12,11 +12,11 @@ filesystem_nodiscard std::pair<file, system::io_error> __fs_create_file(const pa
 	__fs_win_file_access_flags, __fs_share_mode_flags, __fs_win_file_creation_disposition,
 	__fs_win_file_attributes, __fs_win_file_flags);
 
-filesystem_nodiscard sizetype __fs_read_file(file&, mutable_buffer, sizetype);
+filesystem_nodiscard std::pair<sizetype, system::io_error> __fs_read_file(file&, mutable_buffer, sizetype);
 filesystem_nodiscard sizetype __fs_read_file_async(file&, mutable_buffer, sizetype);
 
-filesystem_nodiscard sizetype __fs_write_file(file&, const_buffer, sizetype);
-filesystem_nodiscard sizetype __fs_append_file(file&, const_buffer);
+filesystem_nodiscard std::pair<sizetype, system::io_error> __fs_write_file(file&, const_buffer, sizetype);
+filesystem_nodiscard std::pair<sizetype, system::io_error> __fs_append_file(file&, const_buffer);
 
 filesystem_nodiscard __win_file_info __fs_file_info(file&);
 filesystem_nodiscard __win_file_info __fs_file_info(const path&);
