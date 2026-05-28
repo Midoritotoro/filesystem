@@ -38,6 +38,7 @@ public:
     static constexpr underlying_type not_supported          = ERROR_NOT_SUPPORTED;
     static constexpr underlying_type io_pending             = ERROR_IO_PENDING;
     static constexpr underlying_type handle_eof             = ERROR_HANDLE_EOF;
+    static constexpr underlying_type invalid_handle         = ERROR_INVALID_HANDLE;
 
     struct internal {
         static constexpr underlying_type more_data = ERROR_MORE_DATA;
@@ -112,6 +113,7 @@ private:
             case not_supported:
             case io_pending:
             case handle_eof:
+            case invalid_handle:
             case internal::more_data: return true;
             default: return false;
         }
@@ -144,6 +146,7 @@ public:
             case io_error::io_pending:              return "I/O operation pending (async)";
             case io_error::handle_eof:              return "End of file reached";
             case io_error::invalid_function:        return "Invalid function";
+            case io_error::invalid_handle:          return "Invalid handle";
             case io_error::internal::more_data:     return "Internal filesystem error (unknown Win32 code)";
             default:                                return "Unknown filesystem error (code: " + std::to_string(ev) + ")";
         }
@@ -166,6 +169,7 @@ public:
             case io_error::io_pending:          return std::errc::operation_in_progress;
             case io_error::handle_eof:          return std::errc::no_message_available;
             case io_error::invalid_function:    return std::errc::function_not_supported;
+            case io_error::invalid_handle:      return std::errc::invalid_argument;
             default:                            return std::error_condition(ev, *this);
         }
     }
@@ -183,28 +187,6 @@ inline const std::error_category& io_error_category() noexcept {
 
 inline std::error_code make_error_code(io_error error) noexcept {
     return std::error_code(error.value(), io_error_category());
-}
-
-inline std::string_view to_string(io_error error) noexcept {
-    switch (error.value()) {
-        case io_error::success:                 return "Success";
-        case io_error::file_not_found:          return "File not found";
-        case io_error::path_not_found:          return "Path not found";
-        case io_error::access_denied:           return "Access denied";
-        case io_error::sharing_violation:       return "Sharing violation";
-        case io_error::file_exists:             return "File exists";
-        case io_error::already_exists:          return "Already exists";
-        case io_error::directory_not_empty:     return "Directory not empty";
-        case io_error::invalid_name:            return "Invalid name";
-        case io_error::bad_path:                return "Bad path";
-        case io_error::invalid_parameter:       return "Invalid parameter";
-        case io_error::insufficient_buffer:     return "Insufficient buffer";
-        case io_error::not_supported:           return "Not supported";
-        case io_error::io_pending:              return "I/O pending";
-        case io_error::handle_eof:              return "Handle EOF";
-        case io_error::internal::more_data:     return "Internal error";
-        default:                                return "Unknown";
-    }
 }
 
 __FILESYSTEM_SYSTEM_NAMESPACE_END

@@ -61,7 +61,8 @@ enum class win_share_mode : u32 {
 	none    = 0,
     delete_ = FILE_SHARE_DELETE,
 	read    = FILE_SHARE_READ, 
-	write   = FILE_SHARE_WRITE
+	write   = FILE_SHARE_WRITE,
+    all     = delete_ | read | write
 };
 
 enum class win_file_access_mode : u32 {

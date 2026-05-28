@@ -96,7 +96,7 @@ namespace detail {
 	}
 
 	template <class _Options_>
-	struct configurable_open_t : fs::options::notifiable<configurable_open_t,
+	struct configurable_open_t : fs::options::strict_elementwise_callable<configurable_open_t,
 		_Options_, for_read_option, for_write_option, share_delete_option,
 		share_read_option, share_write_option, always_option, directory_option>
 	{
@@ -106,25 +106,16 @@ namespace detail {
 			else return win_file_creation_disposition::open_existing;
 		}
 	public:
-		using on_complete_callback_type = fs::options::fetch_t<fs::options::completion_callback_key, _Options_>;
-		static constexpr auto has_callback = !options::concepts::same_as<on_complete_callback_type, fs::options::unknown_key>;
-
 		using callable_tag_type = configurable_open_t;
-		using return_type = std::conditional_t<has_callback, void, std::pair<file, system::io_error>>;
 
-		filesystem_always_inline return_type operator()(const path& path) const {
+		filesystem_always_inline std::pair<file, system::io_error> operator()(const path& path) const {
 			return fs::options::dispatch_call(*this, path);
 		}
-
-		static filesystem_always_inline return_type deferred_call(auto options, const path& path) {
-			auto [file, err] = create_file(path, access_flags_from_options<_Options_>(),
+		
+		static filesystem_always_inline std::pair<file, system::io_error> deferred_call(auto options, const path& path) {
+			return create_file(path, access_flags_from_options<_Options_>(),
 				share_flags_from_options<_Options_>(), open_disposition(),
 				file_attributes_from_options<_Options_>(), file_flags_from_options<_Options_>());
-
-			if constexpr (has_callback)
-				std::invoke(options[fs::options::completion_callback_key].callback(), err, std::move(file));
-			else
-				return { std::move(file), err };
 		}
 	};
 
@@ -209,7 +200,7 @@ namespace detail {
 	};
 
 	template <class _Options_>
-	struct configurable_create_t : fs::options::notifiable<configurable_create_t, _Options_,
+	struct configurable_create_t : fs::options::strict_elementwise_callable<configurable_create_t, _Options_,
 		for_read_option, for_write_option, share_delete_option, share_read_option, share_write_option,
 		always_option, if_not_exists_option, directory_option>
 	{
@@ -220,58 +211,59 @@ namespace detail {
 			else return win_file_creation_disposition::create_new;
 		}
 	public:
-		using on_complete_callback_type = fs::options::fetch_t<fs::options::completion_callback_key, _Options_>;
-		static constexpr auto has_callback = !options::concepts::same_as<on_complete_callback_type, fs::options::unknown_key>;
-
 		using callable_tag_type = configurable_create_t;
-		using return_type = std::conditional_t<has_callback, void, std::pair<file, system::io_error>>;
 
-		filesystem_nodiscard filesystem_always_inline return_type operator()(const path& path) const {
+		filesystem_nodiscard filesystem_always_inline std::pair<file, system::io_error> operator()(const path& path) const {
 			return fs::options::dispatch_call(*this, path);
 		}
 
-		static filesystem_always_inline return_type deferred_call(auto options, const path& path) {
-			auto [file, err] = create_file(path, access_flags_from_options<_Options_>(),
+		static filesystem_always_inline std::pair<file, system::io_error> deferred_call(auto options, const path& path) {
+			return create_file(path, access_flags_from_options<_Options_>(),
 				share_flags_from_options<_Options_>(), disposition(),
 				file_attributes_from_options<_Options_>(), file_flags_from_options<_Options_>());
-
-			if constexpr (has_callback)
-				std::invoke(options[fs::options::completion_callback_key].callback(), err, std::move(file));
-			else
-				return { std::move(file), err };
 		}
 	};
 
 	template <class _Options_>
-	struct configurable_copy_t : fs::options::notifiable<configurable_copy_t, _Options_> {
+	struct configurable_copy_t : fs::options::strict_elementwise_callable<configurable_copy_t, _Options_> {
 		using callable_tag_type = configurable_copy_t;
 	};
 
 	template <class _Options_>
-	struct configurable_move_t : fs::options::notifiable<configurable_move_t, _Options_> {
+	struct configurable_move_t : fs::options::strict_elementwise_callable<configurable_move_t, _Options_> {
 		using callable_tag_type = configurable_move_t;
+
+
 	};
 
 	template <class _Options_>
-	struct configurable_rename_t : fs::options::notifiable<configurable_rename_t, _Options_> {
+	struct configurable_rename_t : fs::options::strict_elementwise_callable<configurable_rename_t, _Options_> {
 		using callable_tag_type = configurable_rename_t;
+
+		filesystem_nodiscard filesystem_always_inline system::io_error operator()(const path& file_path, const path& new_name) const {
+			return fs::options::dispatch_call(*this, file_path, new_name);
+		}
+
+		filesystem_nodiscard filesystem_always_inline static auto deferred_call(auto options, const path& file_path, const path& new_name) {
+			return rename_file(file_path, new_name);
+		}
 	};
 
 	template <class _Options_>
-	struct configurable_remove_t : fs::options::notifiable<configurable_remove_t, _Options_> {
+	struct configurable_remove_t : fs::options::strict_elementwise_callable<configurable_remove_t, _Options_> {
 		using callable_tag_type = configurable_remove_t;
 
-		filesystem_nodiscard filesystem_always_inline bool operator()(const path& path) const {
+		filesystem_nodiscard filesystem_always_inline system::io_error operator()(const path& path) const {
 			return fs::options::dispatch_call(*this, path);
 		}
 
 		static filesystem_always_inline auto deferred_call(auto options, const path& path) {
-			return remove_file(path, access_flags_from_options<_Options_>());
+			return remove_file(path);
 		}
 	};
 
 	template <class _Options_>
-	struct configurable_exists_t : fs::options::notifiable<configurable_exists_t, _Options_> {
+	struct configurable_exists_t : fs::options::strict_elementwise_callable<configurable_exists_t, _Options_> {
 		using callable_tag_type = configurable_exists_t;
 
 		filesystem_nodiscard filesystem_always_inline bool operator()(const path& path) const {

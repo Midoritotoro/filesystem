@@ -63,26 +63,6 @@ inline system::io_error set_delete_flag(system::handle handle) noexcept {
 	return system::io_error::last();
 }
 
-inline std::pair<bool, system::io_error> try_delete_via_disposition_ex(system::handle handle) noexcept {
-	FILE_DISPOSITION_INFO_EX info = { 0 };
-	info.Flags = FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS
-		| FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE;
-
-	if (SetFileInformationByHandle(handle.native(), FileDispositionInfoEx, &info, sizeof(info)))
-		return { true, system::io_error::success };
-
-	const auto last_error = system::io_error::last();
-
-	switch (last_error.value()) {
-		case system::io_error::invalid_parameter:
-		case system::io_error::invalid_function:
-		case system::io_error::not_supported: return { false,  system::io_error::not_supported };
-		default: break;
-	}
-
-	return { false, last_error };
-}
-
 inline system::io_error try_clear_readonly_for_delete(system::handle handle) noexcept {
 	FILE_BASIC_INFO info;
 
@@ -125,11 +105,11 @@ filesystem_nodiscard inline std::pair<file, system::io_error> create_file(const 
 	else return { file(path, handle), system::io_error::success };
 }
 
-filesystem_nodiscard bool is_running_asynchronously(system::io_error error) noexcept {
+filesystem_nodiscard inline bool is_running_asynchronously(system::io_error error) noexcept {
 	return error == system::io_error::io_pending || error == system::io_error::internal::more_data;
 }
 
-filesystem_nodiscard bool is_eof(system::io_error error) noexcept {
+filesystem_nodiscard inline bool is_eof(system::io_error error) noexcept {
 	return error == system::io_error::handle_eof;
 }
 
@@ -142,7 +122,7 @@ sizetype wait_for_async_io(overlapped& overlapped, system::handle handle) {
 }
 
 template <mutable_buffer_sequence _BufferSequence_>
-std::pair<sizetype, system::io_error> read_file(file& file, _BufferSequence_ buffer, sizetype byte_offset) {
+inline std::pair<sizetype, system::io_error> read_file(file& file, _BufferSequence_ buffer, sizetype byte_offset) {
 	sizetype readed_bytes = 0;
 	overlapped overlapped;
 
@@ -167,7 +147,7 @@ std::pair<sizetype, system::io_error> read_file(file& file, _BufferSequence_ buf
 }
 
 template <buffer_sequence _BufferSequence_>
-std::pair<sizetype, system::io_error> write_file(file& file, _BufferSequence_ buffer, sizetype byte_offset) {
+inline std::pair<sizetype, system::io_error> write_file(file& file, _BufferSequence_ buffer, sizetype byte_offset) {
 	sizetype written_bytes = 0;
 	overlapped overlapped;
 
@@ -191,63 +171,78 @@ std::pair<sizetype, system::io_error> write_file(file& file, _BufferSequence_ bu
 }
 
 template <buffer_sequence _BufferSequence_>
-std::pair<sizetype, system::io_error> append_file(file& file, _BufferSequence_ buffer) {
+inline std::pair<sizetype, system::io_error> append_file(file& file, _BufferSequence_ buffer) {
 	return write_file(file, buffer, static_cast<sizetype>(-1));
 }
 
-std::pair<bool, system::io_error> remove_file(const path& path) {
-	constexpr auto flags = win_file_flags_data::backup_semantics | win_file_flags_data::open_reparse_point;
+inline bool file_exists(const path& path) {
+	return (GetFileAttributesW(path.native().c_str()) != INVALID_FILE_ATTRIBUTES);
+}
 
-	auto [file, err] = create_file(path, win_file_access_mode::all_attributes, win_share_mode::none,
+inline system::io_error remove_file(const path& path) {
+	constexpr auto flags = win_file_flags_data::none;// win_file_flags_data::backup_semantics | win_file_flags_data::open_reparse_point;
+
+	auto [file, err] = create_file(path, win_file_access_mode::all_attributes, win_share_mode::all,
 		win_file_creation_disposition::open_existing, win_file_attributes_data::normal, flags);
 
 	auto has_permissions_to_change_file_attrs = false;
 
-	if (err)
-		has_permissions_to_change_file_attrs = true;
+	if (err) has_permissions_to_change_file_attrs = true;
 	else if (err == system::io_error::access_denied) {
 		auto [for_delete, err2] = create_file(path, win_file_access_mode::delete_,
-			win_share_mode::none, win_file_creation_disposition::open_existing,
+			win_share_mode::all, win_file_creation_disposition::open_existing,
 			win_file_attributes_data::normal, flags);
 		
-		if (err2 != system::io_error::access_denied) return { false, err2 };
+		if (!err2) return err2;
 		file = std::move(for_delete);
 	}
-	else return { false, err.translate_to_success(system::io_error::file_not_found) };
+	else return err;
 
-	const auto [ok, err3] = try_delete_via_disposition_ex(file.handle());
+	FILE_DISPOSITION_INFO_EX info = { 0 };
+	info.Flags = FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS
+		| FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE;
 
-	if (!ok && err3 != system::io_error::not_supported) return { false, err3 };
+	if (SetFileInformationByHandle(file.handle().native(), FileDispositionInfoEx, &info, sizeof(info)))
+		return system::io_error::success;
+
+	const auto last_error = system::io_error::last();
+
+	switch (last_error.value()) {
+		case system::io_error::invalid_parameter:
+		case system::io_error::invalid_function:
+		case system::io_error::not_supported: break;
+		default: return last_error;
+	}
 
 	const auto err4 = set_delete_flag(file.handle());
 
-	if (err4) return { true, err4 };
-	else if (err4 == system::io_error::access_denied && has_permissions_to_change_file_attrs) {
-		const auto err5 = try_clear_readonly_for_delete(file.handle());
-		return { err5 == system::io_error::success, err5 };
-	}
+	if (err4 == system::io_error::access_denied && has_permissions_to_change_file_attrs)
+		return try_clear_readonly_for_delete(file.handle());
 
-	return { false, err4 };
+	return err4;
 }
 
-bool change_file_attributes(const path& path, win_file_attributes attrs) {
+inline bool change_file_attributes(const path& path, win_file_attributes attrs) {
 	return SetFileAttributesW(path.native().c_str(), attrs.value());
 }
 
-win_file_info file_info(file& file) {
+inline win_file_info file_info(file& file) {
 	BY_HANDLE_FILE_INFORMATION info;
 	GetFileInformationByHandle(file.handle().native(), &info);
 	return info;
 }
 
-win_file_info file_info(const path& path) {
+inline win_file_info file_info(const path& path) {
 	win_file_info info;
 	GetFileAttributesExW(path.native().c_str(), GetFileExInfoStandard, &info);
 	return info;
 }
 
-bool file_exists(const path& path) {
-	return (GetFileAttributesW(path.native().c_str()) != INVALID_FILE_ATTRIBUTES);
+system::io_error rename_file(const path& file_path, const path& new_name) {
+	if (MoveFileExW(file_path.c_str(), new_name.c_str(), MOVEFILE_REPLACE_EXISTING))
+		return system::io_error::success;
+
+	return system::io_error::last();
 }
 
 } // namespace detail
