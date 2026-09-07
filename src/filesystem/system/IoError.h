@@ -19,7 +19,8 @@ public:
 
     enum class category : i32  {
         known,
-        internal
+        internal,
+        contract
     };
 
     static constexpr underlying_type success                = ERROR_SUCCESS;
@@ -44,6 +45,10 @@ public:
         static constexpr underlying_type more_data = ERROR_MORE_DATA;
     };
 
+    struct contract {
+        static constexpr underlying_type path_scope_violation = 1001;
+    };
+
 	constexpr io_error() noexcept : _value(success) {}
 	constexpr io_error(underlying_type value) noexcept : _value(value) {}
 
@@ -61,6 +66,10 @@ public:
 
     constexpr bool is_internal() const noexcept {
         return type() == category::internal;
+    }
+
+    constexpr bool is_contract() const noexcept {
+        return type() == category::contract;
     }
 
 	constexpr explicit operator bool() const noexcept {

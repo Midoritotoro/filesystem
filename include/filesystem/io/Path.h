@@ -36,14 +36,14 @@ public:
 		p.clear();
 	}
 
-	template <str_type _Source_>
-	path(const _Source_& source, format fmt = auto_format) {
+	template <str_type Src>
+	path(const Src& source, format fmt = auto_format) {
 		str_cvt(_path, source);
 	}
 
-	template <class _InputIterator_>
-	path(_InputIterator_ first, _InputIterator_ last) {
-		static_assert(is_character_v<std::iter_value_t<_InputIterator_>>, "invalid value_type");
+	template <class InIt>
+	path(InIt first, InIt last) {
+		static_assert(is_character_v<std::iter_value_t<InIt>>, "invalid value_type");
 		str_cvt(_path, first, last);
 	}
 
@@ -120,23 +120,23 @@ public:
 		_path.push_back(x);
 	}
 
-	template <class _CharType_>
-	path& operator+=(_CharType_ x) {
+	template <class Char>
+	path& operator+=(Char x) {
 		return *this;
 	}
 
-	template <class _Source_>
-	path& operator+=(const _Source_& source) {
+	template <class Src>
+	path& operator+=(const Src& source) {
 		return *this;
 	}
 
-	template <class _Source_>
-	path& concat(const _Source_& source) {
+	template <class Src>
+	path& concat(const Src& source) {
 		return *this;
 	}
 
-	template <class _InputIterator_>
-	path& concat(_InputIterator_ first, _InputIterator_ last) {
+	template <class InIt>
+	path& concat(InIt first, InIt last) {
 		return *this;
 	}
 	
@@ -229,6 +229,10 @@ public:
 
 	path lexically_proximate(const path& base) const noexcept {
 		return *this;
+	}
+
+	friend bool operator==(const path& path1, const path& path2) noexcept {
+		return path1._path == path2._path;
 	}
 private:
 	string_type _path;

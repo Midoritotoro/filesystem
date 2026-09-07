@@ -233,7 +233,7 @@ namespace detail {
 	struct configurable_move_t : fs::options::strict_elementwise_callable<configurable_move_t, _Options_> {
 		using callable_tag_type = configurable_move_t;
 
-
+		
 	};
 
 	template <class _Options_>

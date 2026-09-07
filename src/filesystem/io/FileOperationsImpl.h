@@ -10,33 +10,41 @@ __FILESYSTEM_IO_NAMESPACE_BEGIN
 
 namespace detail {
 
-template <class _Buffer_>
+template <class Buf>
 concept buffer_sequence = requires {
-	typename _Buffer_::buffer_type;
-	typename _Buffer_::size_type;
-} && requires(typename _Buffer_::buffer_type ptr, typename _Buffer_::size_type sz) {
-	_Buffer_{ ptr, sz};
-} && requires(const _Buffer_ buf, typename _Buffer_::size_type sz) {
-	{ buf.data() } -> std::same_as<typename _Buffer_::buffer_type>;
-	{ buf.size() } -> std::same_as<typename _Buffer_::size_type>;
-	{ buf + sz } -> std::same_as<_Buffer_>;
+	typename Buf::buffer_type;
+	typename Buf::size_type;
+} && requires(typename Buf::buffer_type ptr, typename Buf::size_type sz) {
+	Buf{ ptr, sz};
+} && requires(const Buf buf, typename Buf::size_type sz) {
+	{ buf.data() } -> std::same_as<typename Buf::buffer_type>;
+	{ buf.size() } -> std::same_as<typename Buf::size_type>;
+	{ buf + sz } -> std::same_as<Buf>;
 };
 
-template <class _Buffer_>
-concept mutable_buffer_sequence = buffer_sequence<_Buffer_> &&
-    std::is_pointer_v<typename _Buffer_::buffer_type> &&
-    !std::is_const_v<std::remove_pointer_t<typename _Buffer_::buffer_type>>;
+template <class Buf>
+concept mutable_buffer_sequence = buffer_sequence<Buf> &&
+    std::is_pointer_v<typename Buf::buffer_type> &&
+    !std::is_const_v<std::remove_pointer_t<typename Buf::buffer_type>>;
 
-template <class _Buffer_>
-concept const_buffer_sequence = buffer_sequence<_Buffer_> &&
-    std::is_pointer_v<typename _Buffer_::buffer_type> &&
-    std::is_const_v<std::remove_pointer_t<typename _Buffer_::buffer_type>>;
+template <class Buf>
+concept const_buffer_sequence = buffer_sequence<Buf> &&
+    std::is_pointer_v<typename Buf::buffer_type> &&
+    std::is_const_v<std::remove_pointer_t<typename Buf::buffer_type>>;
 
-enum class file_disposition : dword_t {
-    delete_				= FILE_DISPOSITION_FLAG_DELETE,
-    posix_semantics		= FILE_DISPOSITION_FLAG_POSIX_SEMANTICS,
-    ignore_readonly_attr	= FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE
+//enum class file_disposition : dword_t {
+//    delete_				= FILE_DISPOSITION_FLAG_DELETE,
+//    posix_semantics		= FILE_DISPOSITION_FLAG_POSIX_SEMANTICS,
+//    ignore_readonly_attr	= FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE
+//};
+
+enum class move_semantics : dword_t {
+	none = 0,
+	overwrite = MOVEFILE_REPLACE_EXISTING,
+	allow_cross_volume = MOVEFILE_COPY_ALLOWED
 };
+
+FS_DECLARE_FLAGS(move_semantics_flags, move_semantics);
 
 inline system::io_error set_delete_flag(system::handle handle) noexcept {
 	FILE_DISPOSITION_INFO_EX info = { 0 };
@@ -121,8 +129,8 @@ sizetype wait_for_async_io(overlapped& overlapped, system::handle handle) {
 	return transferred_bytes;
 }
 
-template <mutable_buffer_sequence _BufferSequence_>
-inline std::pair<sizetype, system::io_error> read_file(file& file, _BufferSequence_ buffer, sizetype byte_offset) {
+template <mutable_buffer_sequence BufSeq>
+inline std::pair<sizetype, system::io_error> read_file(file& file, BufSeq buffer, sizetype byte_offset) {
 	sizetype readed_bytes = 0;
 	overlapped overlapped;
 
@@ -146,8 +154,8 @@ inline std::pair<sizetype, system::io_error> read_file(file& file, _BufferSequen
 	return { readed_bytes, last_error };
 }
 
-template <buffer_sequence _BufferSequence_>
-inline std::pair<sizetype, system::io_error> write_file(file& file, _BufferSequence_ buffer, sizetype byte_offset) {
+template <buffer_sequence BufSeq>
+inline std::pair<sizetype, system::io_error> write_file(file& file, BufSeq buffer, sizetype byte_offset) {
 	sizetype written_bytes = 0;
 	overlapped overlapped;
 
@@ -170,8 +178,8 @@ inline std::pair<sizetype, system::io_error> write_file(file& file, _BufferSeque
 	return { written_bytes, last_error };
 }
 
-template <buffer_sequence _BufferSequence_>
-inline std::pair<sizetype, system::io_error> append_file(file& file, _BufferSequence_ buffer) {
+template <buffer_sequence BufSeq>
+inline std::pair<sizetype, system::io_error> append_file(file& file, BufSeq buffer) {
 	return write_file(file, buffer, static_cast<sizetype>(-1));
 }
 
@@ -180,7 +188,7 @@ inline bool file_exists(const path& path) {
 }
 
 inline system::io_error remove_file(const path& path) {
-	constexpr auto flags = win_file_flags_data::none;// win_file_flags_data::backup_semantics | win_file_flags_data::open_reparse_point;
+	constexpr auto flags = win_file_flags_data::none; // win_file_flags_data::backup_semantics | win_file_flags_data::open_reparse_point;
 
 	auto [file, err] = create_file(path, win_file_access_mode::all_attributes, win_share_mode::all,
 		win_file_creation_disposition::open_existing, win_file_attributes_data::normal, flags);
@@ -238,11 +246,15 @@ inline win_file_info file_info(const path& path) {
 	return info;
 }
 
-system::io_error rename_file(const path& file_path, const path& new_name) {
-	if (MoveFileExW(file_path.c_str(), new_name.c_str(), MOVEFILE_REPLACE_EXISTING))
-		return system::io_error::success;
+system::io_error move_file(const path& file_path, const path& new_name, move_semantics_flags __flags) {
+	return MoveFileExW(file_path.c_str(), new_name.c_str(), __flags.value()) ? system::io_error::success : system::io_error::last();
+}
 
-	return system::io_error::last();
+system::io_error rename_file(const path& file_path, const path& new_name) {
+	if (file_path.parent_path().lexically_normal() != new_name.parent_path().lexically_normal())
+		return system::io_error::contract::path_scope_violation;
+
+	return MoveFileExW(file_path.c_str(), new_name.c_str(), 0) ? system::io_error::success : system::io_error::last();
 }
 
 } // namespace detail

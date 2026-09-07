@@ -313,6 +313,18 @@ void test_remove() {
     fs_remove();
 }
 
+void test_rename() {
+    create_text_file(test_write_file_name, "0123456789");
+
+    {
+        auto err = fs::io::rename(fs::io::path(filesystem_native_text("fs_write_test.txt")),
+            fs::io::path(filesystem_native_text("fs_write_test_new_name.txt")));
+        
+    }
+
+    
+}
+
 int main() {
     test_file_default_constructor();
 
